@@ -1,0 +1,87 @@
+﻿Build started 2013/11/17 下午 10:42:36.
+     1>Project "G:\GamePrograming\HW02\HelloWorld.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\HelloWorld.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include" /I"C:\Program Files (x86)\OpenAL 1.1 SDK\include" /IC:\Fly2_API\Include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Programs\Hello.cpp
+         Hello.cpp
+     1>g:\gameprograming\hw02\programs\hello.cpp(155): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(156): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(157): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(159): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(160): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(161): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(321): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(322): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(355): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(356): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(391): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(392): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(393): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(395): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(396): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(397): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(426): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(427): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(428): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(430): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(431): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(432): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(467): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(468): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(469): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(471): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(472): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(473): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>g:\gameprograming\hw02\programs\hello.cpp(525): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+     1>g:\gameprograming\hw02\programs\hello.cpp(540): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+     1>g:\gameprograming\hw02\programs\hello.cpp(541): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+     1>g:\gameprograming\hw02\programs\hello.cpp(542): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\HelloWorld.exe.embed.manifest.res" Debug\HelloWorld_manifest.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\GamePrograming\HW02\Debug\HelloWorld.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86" /LIBPATH:"C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32" /LIBPATH:C:\Fly2_API\LibWin32 d3d9.lib d3dx9.lib OpenAL32.lib XInput.lib LibFly2DX9W32.lib strmiids.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\HelloWorld.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"G:\GamePrograming\HW02\Debug\HelloWorld.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\GamePrograming\HW02\Debug\HelloWorld.lib" /MACHINE:X86 Debug\HelloWorld.exe.embed.manifest.res
+         Debug\Hello.obj
+         LibFly2DX9W32.lib(FlyWin32.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
+     1>LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+         Generating code
+         Finished generating code
+     1>LibFly2DX9W32.lib(FlyWin32.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(Fly.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyThreadPool.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyGamepad.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyGameFX.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyAudio.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyViewport.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyScene.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyCharacter.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyObject.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyText.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyMaterial.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyOpenAL.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyDX9.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyShader.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyXInput.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyMemory.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyMath.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyWorld.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+     1>LibFly2DX9W32.lib(FyGeometry.obj) : warning LNK4204: 'G:\GamePrograming\HW02\Debug\vc100.pdb' is missing debugging information for referencing module; linking object as if no debug info
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\HelloWorld.exe.embed.manifest" /manifest Debug\HelloWorld.exe.intermediate.manifest
+         All outputs are up-to-date.
+       LinkEmbedManifest:
+         All outputs are up-to-date.
+         HelloWorld.vcxproj -> G:\GamePrograming\HW02\Debug\HelloWorld.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\HelloWorld.unsuccessfulbuild".
+         Touching "Debug\HelloWorld.lastbuildstate".
+     1>Done Building Project "G:\GamePrograming\HW02\HelloWorld.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:12.55

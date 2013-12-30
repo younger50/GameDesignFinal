@@ -1,0 +1,18 @@
+//River Shader by Digger 2009/10/07
+
+Effect River5.fx
+
+VertexType position normal texture 1 2 TangentU ;
+
+Technique 1
+   0 RS 5 normalmap 0 0 pMap 0 1 reflectmap 0 2 hdrdiffmap 0 3 hdrspecmap 0 4
+   
+Constant 8
+	0 E Matrix LocalToScreen WVP
+	1 E Matrix Global mW
+    2 E Camera ViewToScreen pcam mVP
+    3 E Camera Position cam CP
+    4 E Material fData 0 OW
+    5 E Material fData 1 BW
+    6 E Material fData 2 Timer
+    7 E Light position mainLight LP

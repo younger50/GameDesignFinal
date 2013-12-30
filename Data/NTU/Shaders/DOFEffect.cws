@@ -1,0 +1,25 @@
+# The DOF Shader Effects, the 2nd version
+# Depth-of-field Effect
+#
+# Created by C.Wang 0429, 2008
+#
+
+# the Effect
+Effect DOFEffect.fx
+
+# vertex type
+VertexType position Texture 1 2
+
+# techniques
+Technique 2
+   0 DoDOF       2 fullResMap 0 0 depthMap 0 1
+   1 GenDepth    0
+
+# effect constants   
+Constant 6
+   0 E Material Data  0       dist            ByTech 2 0 1
+   1 E Material Data  1       inside          ByTech 2 0 1
+   2 E Material Data  2       outside         ByTech 2 0 1
+   3 E Material Data  3       pixelSizeHigh 2 ByTech 1 0
+   4 E Matrix   LocalToScreen mWVP
+   5 E Matrix   LocalToView   mWV

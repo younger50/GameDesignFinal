@@ -1,0 +1,23 @@
+
+Effect Basic_Color_Normal_Specular.fx
+
+VertexType Position Normal  Texture 1 2 TangentU
+
+Technique 1
+   0 Basic_Color_Normal_Specular 3 ColorMap 0 0  NormalMap 0 1  SpecularMap 0 2
+
+Constant 13
+   0 E Matrix LocalToScreen mWVP
+   1 E Matrix Global mWorld
+   2 E Matrix GlobalInverse mWorldInv
+   3 E Light Position MainLight mainLightPosition
+   4 E Light Color MainLight mainLightColor    
+   5 E Light SkyColor skyColor
+   6 E Light GroundColor groundColor
+   7 E Material Ambient amb                    
+   8 E Material Diffuse dif                     
+   9 E Material Specular spe                   
+  10 E Material Shineness power              
+  11 E Camera Position cam camPosition
+  12 E Material fData 0 bumpy
+

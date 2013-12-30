@@ -1,0 +1,26 @@
+
+Effect Basic_Color_Normal_Power.fx
+
+VertexType Position Normal Texture 1 2 TangentU
+
+Technique 3
+   0 Basic_Color_Normal_Power       3 ColorMap 0 0 NormalMap 0 1 SpecularMap 0 2
+   1 Basic_Color_Normal_Power_Depth 5 ColorMap 0 0 NormalMap 0 1 SpecularMap 0 2 DepthMap 0 3 BackgroundMap 0 4
+   2 AAA                            4 ColorMap 0 0 NormalMap 0 1 SpecularMap 0 2 ReflectionMap 0 3
+   
+Constant 15
+   0 E Matrix LocalToScreen mWVP
+   1 E Matrix Global mWorld
+   2 E Matrix GlobalInverse mWorldInv
+   3 E Light Position MainLight mainLightPosition
+   4 E Light Color MainLight mainLightColor 
+   5 E Light SkyColor skyColor
+   6 E Light GroundColor groundColor
+   7 E Material Ambient amb                    
+   8 E Material Diffuse dif                   
+   9 E Material Specular spe                   
+  10 E Material Shineness power              
+  11 E Camera Position cam camPosition
+  12 E Matrix LocalToView mWV
+  13 E Camera Far current farPlane
+  14 E Camera Near current nearPlane

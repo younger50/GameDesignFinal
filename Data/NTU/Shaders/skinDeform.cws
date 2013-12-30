@@ -1,0 +1,20 @@
+# This shader implements skin deformation
+# C.Wang 1230, 2005
+#
+
+Effect skinDeform.fx
+
+VertexType position normal Texture 1 2 SkinWeight 2 ; the vertex format
+
+Technique 1
+   0 skinDeform 0       ; Tech 0 Name numTex (texNameInshader iTex iLayer)
+
+# shader constants
+Constant 7
+   0 E Matrix ViewToScreen viewProj
+   1 E Light Position MainLight mainLightPosition
+   2 E Light Color MainLight mainLightColor
+   3 E Light Ambient ambLgt
+   4 E Material Ambient amb
+   5 E Material Diffuse dif
+   6 E Matrix bone16 bone
