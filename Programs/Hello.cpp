@@ -45,6 +45,9 @@ float beforeMovingCouter;
 void QuitGame(BYTE, BOOL4);
 void Movement(BYTE, BOOL4);
 
+void cursorCtr(BYTE, BOOL4);
+void trackCursorPos(void);
+
 void Attack(BYTE, BOOL4);
 
 // timer callbacks
@@ -132,6 +135,9 @@ public:
 	}
 
 }ATTRIBUTE;
+
+float rot[]={0.0, 0.0};
+POINT3D preMousePos;
 
 typedef class PLAYER{
 public:
@@ -496,6 +502,24 @@ public:
 		}
 		return false;
 	}
+	void rotCharDir(){
+		float R2PI = 1.0/180.0f*PI;
+		POINT3D nowCharPos = pos;
+		POINT3D tmpPt = fDir.findVertex(pos, 100.0);
+		POINT3D resPt;
+
+		resPt.x = nowCharPos.x + (tmpPt.x-nowCharPos.x)*cos(rot[0]*R2PI) - (tmpPt.y-nowCharPos.y)*sin(rot[0]*R2PI);
+		resPt.y = nowCharPos.y + (tmpPt.x-nowCharPos.x)*sin(rot[0]*R2PI) + (tmpPt.y-nowCharPos.y)*cos(rot[0]*R2PI);
+		resPt.z = pos.z;
+
+		fDir = resPt - pos;
+		fDir.normalize();
+
+		float arr_fDir[3], arr_uDir[3];
+		fDir.getArr(arr_fDir);
+		uDir.getArr(arr_uDir);
+		actor.SetDirection(arr_fDir, arr_uDir);
+	}
 }MAINCHAR;
 
 typedef class NPC_R : public PLAYER{
@@ -590,7 +614,7 @@ public:
 
 		pos.x = focusPt.x - _XY_DST*fDir.x;
 		pos.y = focusPt.y - _XY_DST*fDir.y;
-		pos.z = focusPt.z + _Z_DST*sin(15.0f/180.0f*PI);
+		pos.z = focusPt.z + _Z_DST*sin(5.0f/180.0f*PI);
 
 		focusPt.z += _VIEW_H_PAD;
 		
@@ -600,6 +624,7 @@ public:
 		uDir.x = -fDir.z * tmpFDir.x;
 		uDir.y = -fDir.z * tmpFDir.y;
 		uDir.z = fDir.x*tmpFDir.x + fDir.y*tmpFDir.y;
+		setCameraPos();
 	}
 	void moveCamera_follow(PLAYER &refChar){
 		float cpos[3], cfDir[3], cuDir[3];
@@ -614,9 +639,33 @@ public:
 		fDir = refChar.pos - nextCPos;
 		fDir.z += _VIEW_H_PAD;
 
-		// uDir.x = -fDir.z * tmpFDir.x;
-		// uDir.y = -fDir.z * tmpFDir.y;
-		// uDir.z = fDir.x*tmpFDir.x + fDir.y*tmpFDir.y;
+		VECTOR3D refUDir = refChar.uDir;
+		refUDir.inverse();
+		VECTOR3D tmpVec = fDir.cross(refUDir);
+		tmpVec.normalize();
+		uDir = fDir.cross(tmpVec);
+		uDir.normalize();
+
+		setCameraPos();
+	}
+	void updateCamera_rot(PLAYER &refChar){
+		float R2PI = 1.0/180.0f*PI;
+		POINT3D nowCamPos = pos;
+
+		pos.x = refChar.pos.x + (nowCamPos.x-refChar.pos.x)*cos(rot[0]*R2PI) - (nowCamPos.y-refChar.pos.y)*sin(rot[0]*R2PI);
+		pos.y = refChar.pos.y + (nowCamPos.x-refChar.pos.x)*sin(rot[0]*R2PI) + (nowCamPos.y-refChar.pos.y)*cos(rot[0]*R2PI);
+		pos.z = refChar.pos.z + _Z_DST*sin(5.0f/180.0f*PI);
+
+		fDir = refChar.pos - pos;
+		fDir.z += _VIEW_H_PAD;
+		fDir.normalize();
+
+		VECTOR3D refUDir = refChar.uDir;
+		refUDir.inverse();
+		VECTOR3D tmpVec = fDir.cross(refUDir);
+		tmpVec.normalize();
+		uDir = fDir.cross(tmpVec);
+		uDir.normalize();
 
 		setCameraPos();
 	}
@@ -647,6 +696,7 @@ MAINCHAR  mainChar;
 DONZO npc01;
 vector<NPC_R> robbot(8);
 sCAMERA followCam;
+BOOL isShowCursor = FALSE;
 
 /*------------------
   the main program
@@ -694,7 +744,7 @@ void FyMain(int argc, char **argv){
 	FySetTexturePath("Data\\NTU\\\\Characters");
 	FySetCharacterPath("Data\\NTU\\\\Characters");
 
-	mainChar.initial_pos(3941.0f, -3517.0f, 285.0f);
+	mainChar.initial_pos(3941.0f, -3517.0f, 5.0f);
 	mainChar.loadPlayer(scene, "Lyubu");
 
 	npc01.initial_pos(4050.0f, -3470.0f, 285.0f);
@@ -741,6 +791,8 @@ void FyMain(int argc, char **argv){
 	FyDefineHotKey(FY_3, Attack, FALSE);
 	FyDefineHotKey(FY_4, Attack, FALSE);
 
+	FyDefineHotKey(FY_F2, cursorCtr, FALSE);
+
 	// define some mouse functions
 	// FyBindMouseFunction(LEFT_MOUSE, InitPivot, PivotCam, NULL, NULL);
 	// FyBindMouseFunction(MIDDLE_MOUSE, InitZoom, ZoomCam, NULL, NULL);
@@ -757,6 +809,11 @@ void FyMain(int argc, char **argv){
 	movingForward=false;
 	turingR=false;
 	turingL=false;
+
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	preMousePos.x = mousePos.x;
+	preMousePos.y = mousePos.y;
 }
 
 /*-------------------------------------------------------------
@@ -769,11 +826,32 @@ void FyMain(int argc, char **argv){
 float CHK_DST = 0.0f;
 float lastPos[3] = {0.0f, 0.0f, 0.0f};
 
+void trackCursorPos(void){
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+
+	rot[0] = (preMousePos.x - mousePos.x);
+	// rot[1] = (preMousePos.y - mousePos.y);
+
+	if( rot[0] == 0 )
+		return;
+	
+	mainChar.rotCharDir();
+	followCam.updateCamera_rot(mainChar);
+	
+
+	preMousePos.x = mousePos.x;
+	preMousePos.y = mousePos.y;
+}
+
 void GameAI(int skip){
+	// Hide the Cursor
+	ShowCursor(isShowCursor);
+
 	FnObject terrain;
 	
 	terrain.ID(tID);
-
+	
 	// General Play Action Control
 	mainChar.Play(skip);
 	npc01.Play(skip);
@@ -817,6 +895,8 @@ void GameAI(int skip){
 
 	if( mainChar.cameraFollow )
 		followCam.moveCamera_follow(mainChar);
+
+	trackCursorPos();
 
 	if(mainChar.doAtk)
 		mainChar.doAtk = false;
@@ -866,15 +946,15 @@ void RenderIt(int skip){
 
    char posS[256], fDirS[256], uDirS[256], temp[256];
    char charPos[256], charDir[256];
+   followCam.camera.GetPosition(pos);
+   followCam.camera.GetDirection(fDir, uDir);
    sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
    sprintf(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
    sprintf(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
 
-   FnCharacter actor;
-   actor.ID(actorID);
-   actor.GetPosition(pos);
-   actor.GetDirection(fDir, uDir);
-   sprintf(temp, "Hit Dist: %f\n", CHK_DST);
+   mainChar.actor.GetPosition(pos);
+   mainChar.actor.GetDirection(fDir, uDir);
+   sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
    sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
    sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
 
@@ -894,6 +974,10 @@ void RenderIt(int skip){
    FySwapBuffers();
 }
 
+void cursorCtr(BYTE code, BOOL4 value){
+	if( code == FY_F2 && value )
+		isShowCursor = !isShowCursor;
+}
 void Attack(BYTE code, BOOL4 value){
 	if(code == FY_1 && value ){
 		mainChar.doAtk  = true;

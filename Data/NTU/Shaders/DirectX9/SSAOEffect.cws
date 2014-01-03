@@ -1,0 +1,24 @@
+# This shader implements Environment SSAO
+# Eric Fei 0410, 2013
+#
+
+Effect SSAOEffect.fx
+
+Technique 4
+   0 SSAO_DepthClear 0
+   1 SSAO_Depth      0
+   2 SSAO_Normal     0
+   3 DoSSAO          3 fullResMap 0 0 depthMap 0 1 normalMap 0 2
+   
+Constant 10
+   0 E Matrix   LocalToScreen mWVP
+   1 E Matrix   Global        mWorld
+   2 E Matrix   LocalToView   mWV
+   3 E Camera   Far current   fFar
+   4 E Camera   Near current  fNear
+   5 E Camera   TanFOV2 current tanFov2
+   6 E Camera   Aspect  current aspect
+   7 E Material Data 0       fPixelSize  2 ByTech 2 0 3
+   8 E Material Data 2       sampleRange 1 ByTech 1 3
+   9 E Material Data 3       dist        1 ByTech 1 3
+   
