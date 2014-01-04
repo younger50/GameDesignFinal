@@ -32,6 +32,8 @@ ROOMid terrainRoomID = FAILED_ID;
 TEXTid textID = FAILED_ID;
 OBJECTid lineTestID = FAILED_ID;
 
+
+
 MEDIAid mmID;
 
 // some globals
@@ -168,6 +170,8 @@ public:
 	ATTRIBUTE Attr;
 
 	FnCharacter actor;
+	
+
 	CHARACTERid ID;
 	ACTIONid idleID, runID, walkID, curPoseID;
 	// ACTIONid idle2RunID[2], idle2WalkID[2], walk2RunID[2];
@@ -178,6 +182,15 @@ public:
 	GEOMETRYid bloodBarID;
 	//GEOMETRYid garyBarID;
 	OBJECTid baseID;                // the base object ID of the main character
+
+	//audio
+	FnAudio audio_Atk;
+	FnAudio audio_beAtkedMain;
+	FnAudio audio_die;
+	FnAudio audio_beAtkID0;
+	//FnAudio audio_walk;
+
+	
 
 	PLAYER(float posx = 0.0, float posy = 0.0, float posz = 0.0){
 		// pos(posx, posy, posz);
@@ -197,6 +210,7 @@ public:
 		
 		bloodBarID = FAILED_ID;
 		//garyBarID  = FAILED_ID;
+
 	}
 	void initial_pos(float posx = 0.0, float posy = 0.0, float posz = 0.0){
 		pos(posx, posy, posz);
@@ -229,6 +243,7 @@ public:
 
 	virtual bool Play_preIdf(int skip)=0;
 	void Play(int skip){
+
 		actor.Play(LOOP, (float) skip, FALSE, TRUE);
 		if( Attr.isDie() ){
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
@@ -238,6 +253,7 @@ public:
 
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 		if( getSysAction==beAtkedMainID ){
+			audio_beAtkedMain.Play(ONCE);
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -246,6 +262,7 @@ public:
 			}
 		}
 		else if( getSysAction==beAtkID0 ){
+			audio_beAtkID0.Play(ONCE);
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -382,6 +399,7 @@ public:
 				//bb1.Show(FALSE);
 				//bb1.~FnBillboard();
 
+				audio_die.Play(ONCE);
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
 			}
@@ -421,6 +439,7 @@ public:
 				//bb1.Show(FALSE);
 				//bb1.~FnBillboard();
 
+				audio_die.Play(ONCE);
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
 
@@ -445,7 +464,7 @@ public:
 
 	}
 	virtual bool AttackGoal(PLAYER &goal, int &type)=0;
-	
+
 	void  load_bloodbar(FnScene &scene)
 	{
 		float size[2], color[4];
@@ -483,13 +502,25 @@ public:
 	ACTIONid beAtkID[2];
 	ACTIONid atkID[3];
 
+	
+
 public:
 	MAINCHAR(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
-		;
 	}
 	~MAINCHAR(){;}
 
 	void loadPlayerAction(){
+
+		//load audio
+		audio_Atk.ID(FyCreateAudio());
+		audio_Atk.Load("01_pose07");
+		audio_die.ID(FyCreateAudio());
+		audio_die.Load("02_pose25");
+		audio_beAtkedMain.ID(FyCreateAudio());
+		audio_beAtkedMain.Load("02_pose10");
+		audio_beAtkID0.ID(FyCreateAudio());
+		audio_beAtkID0.Load("01_pose12");
+		
 		// Get character actions
 		idleID = actor.GetBodyAction(NULL, "CombatIdle");
 		runID  = actor.GetBodyAction(NULL, "Run");
@@ -590,6 +621,7 @@ public:
 
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 		if( getSysAction==tmp ){
+			audio_Atk.Play(ONCE);
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -638,6 +670,16 @@ public:
 	~NPC_R(){;}
 
 	void loadPlayerAction(){
+		//load audio
+		audio_Atk.ID(FyCreateAudio());
+		audio_Atk.Load("02_pose22");
+		audio_die.ID(FyCreateAudio());
+		audio_die.Load("03_pose25");
+		audio_beAtkedMain.ID(FyCreateAudio());
+		audio_beAtkedMain.Load("03_pose22");
+		audio_beAtkID0.ID(FyCreateAudio());
+		audio_beAtkID0.Load("03_pose22");
+
 		// Get character actions
 		idleID = actor.GetBodyAction(NULL, "CombatIdle");
 		runID  = actor.GetBodyAction(NULL, "Run");
@@ -670,6 +712,18 @@ public:
 	~DONZO(){;}
 
 	void loadPlayerAction(){
+
+		//load audio
+		audio_Atk.ID(FyCreateAudio());
+		audio_Atk.Load("02_pose07");
+		audio_die.ID(FyCreateAudio());
+		audio_die.Load("02_pose25");
+		audio_beAtkedMain.ID(FyCreateAudio());
+		audio_beAtkedMain.Load("02_pose10");
+		audio_beAtkID0.ID(FyCreateAudio());
+		audio_beAtkID0.Load("02_pose10");
+
+
 		// Get character actions
 		idleID = actor.GetBodyAction(NULL, "Idle");
 		runID  = actor.GetBodyAction(NULL, "Run");
@@ -817,6 +871,7 @@ void FyMain(int argc, char **argv){
 	FySetTexturePath("Data\\NTU\\\\Scenes\\Textures");
 	FySetScenePath("Data\\NTU\\\\Scenes");
 	FySetShaderPath("Data\\NTU\\\\Shaders");
+	FySetAudioPath("Data\\NTU\\\\Audio");
 	
 	FyBeginMedia("Data\\NTU\\\\Media", 2);
 
