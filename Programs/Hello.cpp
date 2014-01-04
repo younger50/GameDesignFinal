@@ -13,6 +13,7 @@
   Last Updated : 1007, 2013, Kevin C. Wang
  ===============================================================*/
 #include "FlyWin32.h"
+#include "FyMedia.h"
 #include "myMath.cpp"
 #include <iostream>
 #include <vector>
@@ -25,10 +26,13 @@ VIEWPORTid vID;                 // the major viewport
 SCENEid sID;                    // the 3D scene
 OBJECTid cID, tID;              // the main camera and the terrain for terrain following
 CHARACTERid actorID;            // the major character
+FnScene scene;
 
 ROOMid terrainRoomID = FAILED_ID;
 TEXTid textID = FAILED_ID;
 OBJECTid lineTestID = FAILED_ID;
+
+MEDIAid mmID;
 
 // some globals
 int frame = 0;
@@ -98,8 +102,10 @@ public:
 	double HP;
 	double ATK, ATK_H, DEF;
 	double SPEED;
+	double Org_HP;
 
 	ATTRIBUTE(double getHP=100, double getATK=50, double getATK_H=70, double getDEF=30, double getSPD = 1){
+		Org_HP= getHP;
 		HP    = getHP;
 		ATK   = getATK;
 		ATK_H = getATK_H;
@@ -131,6 +137,7 @@ public:
 			return false;
 	}
 	void operator()(double getHP=1000, double getATK=50, double getDEF=30, double getSPD = 1){
+		Org_HP= getHP;
 		HP  = getHP;
 		ATK = getATK;
 		DEF = getDEF;
@@ -167,6 +174,10 @@ public:
 
 	ACTIONid dieID, tmpAtkID, beAtkedMainID;
 	ACTIONid beAtkID0;	// for heavy attaak
+	
+	GEOMETRYid bloodBarID;
+	//GEOMETRYid garyBarID;
+	OBJECTid baseID;                // the base object ID of the main character
 
 	PLAYER(float posx = 0.0, float posy = 0.0, float posz = 0.0){
 		// pos(posx, posy, posz);
@@ -183,6 +194,9 @@ public:
 		blockCnt = -1;
 		nowAngle = 0;
 		AtkKey   = 0;
+		
+		bloodBarID = FAILED_ID;
+		//garyBarID  = FAILED_ID;
 	}
 	void initial_pos(float posx = 0.0, float posy = 0.0, float posz = 0.0){
 		pos(posx, posy, posz);
@@ -199,6 +213,10 @@ public:
 		actor.ID(ID);
 		actor.SetDirection(_fDir, _uDir);
 		actor.SetTerrainRoom(terrainRoomID, 10.0f);
+		
+		 // get base object of the character
+		baseID = actor.GetBaseObject();
+		
 		BOOL4 beOK = actor.PutOnTerrain(_pos);
 
 		loadPlayerAction();
@@ -346,25 +364,79 @@ public:
 		uDir.putArr(arr_uDir);
 	}
 	void GetHurt(int skip){
+		if(bloodBarID == FAILED_ID)
+			load_bloodbar(scene);
 		if( !isGameOver ){
+			if(bloodBarID == FAILED_ID)
+			load_bloodbar(scene);
+
 			if( Attr.isDie() ){
+				FnBillboard bb(bloodBarID);
+				float newSize[2];
+				bb.GetSize(newSize);
+				newSize[0] = 0.0f;
+				bb.SetPositionSize(NULL, newSize);
+				bb.Show(FALSE);
+				bb.~FnBillboard();
+				//FnBillboard bb1(garyBarID);
+				//bb1.Show(FALSE);
+				//bb1.~FnBillboard();
+
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
 			}
 			else{
+				FnBillboard bb_blood(bloodBarID);
+				bb_blood.Show(FALSE);
+				bb_blood.~FnBillboard();
+				//FnBillboard bb_gary(garyBarID);
+				//bb_gary.Show(FALSE);
+				//bb_gary.~FnBillboard();
+				
+				bloodBarID=FAILED_ID;
+				//garyBarID=FAILED_ID;
+				load_bloodbar(scene);
+
 				actor.SetCurrentAction(0, NULL, beAtkedMainID, 20.0);
 				blockCnt = 10;
 				curPoseID = beAtkedMainID;
 			}
+			 
 		}
 	}
 	void GetHurt_H(int skip){
 		if( !isGameOver ){
+			if(bloodBarID == FAILED_ID)
+			load_bloodbar(scene);
+
 			if( Attr.isDie() ){
+				FnBillboard bb(bloodBarID);
+				float newSize[2];
+				bb.GetSize(newSize);
+				newSize[0] = 0.0f;
+				bb.SetPositionSize(NULL, newSize);
+				bb.Show(FALSE);
+				bb.~FnBillboard();
+				//FnBillboard bb1(garyBarID);
+				//bb1.Show(FALSE);
+				//bb1.~FnBillboard();
+
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
+
 			}
 			else{
+				FnBillboard bb_blood(bloodBarID);
+				bb_blood.Show(FALSE);
+				bb_blood.~FnBillboard();
+				//FnBillboard bb_gary(garyBarID);
+				//bb_gary.Show(FALSE);
+				//bb_gary.~FnBillboard();
+				
+				bloodBarID=FAILED_ID;
+				//garyBarID=FAILED_ID;
+				load_bloodbar(scene);
+
 				actor.SetCurrentAction(0, NULL, beAtkID0, 20.0);
 				blockCnt = 15;
 				curPoseID = beAtkID0;
@@ -373,6 +445,37 @@ public:
 
 	}
 	virtual bool AttackGoal(PLAYER &goal, int &type)=0;
+	
+	void  load_bloodbar(FnScene &scene)
+	{
+		float size[2], color[4];
+
+		// put  blood Bar
+		OBJECTid bbID = scene.CreateObject(OBJECT);
+		FnObject bb(bbID);
+		bb.SetParent(baseID);
+		float xTrans = -30.0f *(1-Attr.HP/Attr.Org_HP)/2.0f;
+		bb.Translate(xTrans, 0.0f, 95.0f, REPLACE);
+
+		size[0] = Attr.HP/Attr.Org_HP * 25.0f;
+		size[1] = 1.2f;
+		color[0] = color[3] = 1.0f; color[1] = color[2] = 0.0f;
+		bloodBarID = bb.Billboard(NULL, size, NULL, 0, color);
+
+		// put  gary Bar
+		/*OBJECTid bbID1 = scene.CreateObject(OBJECT);
+		FnObject bb1(bbID1);
+		bb1.SetParent(baseID);
+		bb1.Translate(0.0f, 0.0f, 95.0f, REPLACE);
+
+		size[0] = 25.60f;
+		size[1] = 1.8f;
+		color[0] = 0.5f;
+		color[1] = color[2] = 0.5f;
+		color[3] = 0.5f; 
+		
+		garyBarID = bb1.Billboard(NULL, size, NULL, 0, color);*/
+	}
 }PLAYER;
 
 typedef class MAINCHAR : public PLAYER{
@@ -714,6 +817,8 @@ void FyMain(int argc, char **argv){
 	FySetTexturePath("Data\\NTU\\\\Scenes\\Textures");
 	FySetScenePath("Data\\NTU\\\\Scenes");
 	FySetShaderPath("Data\\NTU\\\\Shaders");
+	
+	FyBeginMedia("Data\\NTU\\\\Media", 2);
 
 	// create a viewport
 	vID = FyCreateViewport(0, 0, 1024, 768);
@@ -722,13 +827,18 @@ void FyMain(int argc, char **argv){
 
 	// create a 3D scene
 	sID = FyCreateScene(10);
-	FnScene scene;
 	scene.ID(sID);
 
 	// load the scene
 	scene.Load("scene2");
 	scene.SetAmbientLights(1.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.6f);
 
+	//load background  music
+	mmID = FyCreateMediaPlayer("MUSIC_village.mp3", 0, 0, 800, 600);
+	FnMedia mP;
+	mP.Object(mmID);
+	mP.Play(LOOP);
+	
 	// load the terrain
 	tID = scene.CreateObject(OBJECT);
 	FnObject terrain;
@@ -749,6 +859,7 @@ void FyMain(int argc, char **argv){
 
 	mainChar.initial_pos(3941.0f, -3517.0f, 5.0f);
 	mainChar.loadPlayer(scene, "Lyubu");
+	mainChar.load_bloodbar(scene);
 
 	npc01.initial_pos(4050.0f, -3470.0f, 285.0f);
 	npc01.loadPlayer(scene, "Donzo");
@@ -851,6 +962,19 @@ void trackCursorPos(void){
 void GameAI(int skip){
 	// Hide the Cursor
 	ShowCursor(isShowCursor);
+	
+	if (mmID != FAILED_ID) {
+      FnMedia md;
+      md.Object(mmID);
+      if (md.GetState() == MEDIA_STOPPED) {
+         // after playing, delete the media object
+         FyDeleteMediaPlayer(mmID);
+         mmID = FAILED_ID;
+      }
+      else {
+         //return;
+      }
+	}
 
 	FnObject terrain;
 	
