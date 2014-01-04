@@ -62,6 +62,9 @@ void MoveCam(int, int);
 void InitZoom(int, int);
 void ZoomCam(int, int);
 
+void Attack_mouse_L(int x, int y);
+void Attack_mouse_R(int x, int y);
+
 float focusArea[3];
 
 float ptDist(float a[3], float b[3]){
@@ -252,7 +255,7 @@ public:
 				if( moveKeys[_MV_FW] || moveKeys[_MV_BK] )
 					actor.SetCurrentAction(0, NULL, runID, 10.0);
 				else
-					actor.SetCurrentAction(0, NULL, walkID, 10.0);	  
+					actor.SetCurrentAction(0, NULL, runID, 10.0);	  
 				blockCnt =10;
 			}
 			else if(curPoseID == walkID){
@@ -260,7 +263,7 @@ public:
 				blockCnt = 5;
 			}
 			else if(curPoseID == runID && !(moveKeys[_MV_FW] || moveKeys[_MV_BK])){
-				actor.SetCurrentAction(0, NULL, walkID, 10.0);
+				actor.SetCurrentAction(0, NULL, runID, 10.0);
 				blockCnt =5;
 			}
 
@@ -288,7 +291,7 @@ public:
 				else if( moveKeys[_MV_L] )
 					nowAngle = 90;
 
-				curPoseID = walkID;
+				curPoseID = runID;
 			}
 
 			actor.TurnRight(nowAngle);
@@ -794,7 +797,8 @@ void FyMain(int argc, char **argv){
 	FyDefineHotKey(FY_F2, cursorCtr, FALSE);
 
 	// define some mouse functions
-	// FyBindMouseFunction(LEFT_MOUSE, InitPivot, PivotCam, NULL, NULL);
+	FyBindMouseFunction(LEFT_MOUSE, Attack_mouse_L, NULL, NULL, NULL);
+	FyBindMouseFunction(RIGHT_MOUSE, Attack_mouse_R, NULL, NULL, NULL);
 	// FyBindMouseFunction(MIDDLE_MOUSE, InitZoom, ZoomCam, NULL, NULL);
 	// FyBindMouseFunction(RIGHT_MOUSE, InitMove, MoveCam, NULL, NULL);
 
@@ -978,7 +982,16 @@ void cursorCtr(BYTE code, BOOL4 value){
 	if( code == FY_F2 && value )
 		isShowCursor = !isShowCursor;
 }
+void Attack_mouse_L(int x, int y){
+	mainChar.doAtk  = true;
+	mainChar.AtkKey = 1;
+}
+void Attack_mouse_R(int x, int y){
+	mainChar.doAtk  = true;
+	mainChar.AtkKey = 2;
+}
 void Attack(BYTE code, BOOL4 value){
+	return;
 	if(code == FY_1 && value ){
 		mainChar.doAtk  = true;
 		mainChar.AtkKey = 1;
