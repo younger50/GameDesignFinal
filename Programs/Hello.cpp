@@ -1082,7 +1082,7 @@ public:
 			actor.SetDirection(_fDir, _uDir);
 
 
-		if((mainChar.pos-pos).magnitude() > 600) //距離太遠 ->直接攻城
+		if(fabs((mainChar.pos-pos).magnitude()) > 600) //距離太遠 ->直接攻城
 		{		
 			chageStatus(enemy_attkCasle);
 			return;
@@ -1166,7 +1166,7 @@ public:
 	bool Play_preIdf(int skip){
 		return false;
 	}
-		bool AttackGoal(PLAYER &goal, int &type){
+	bool AttackGoal(PLAYER &goal, int &type){
 		if( !doAtk )
 			return false;
 
@@ -1363,7 +1363,7 @@ public:
 
 MAINCHAR  mainChar;
 DONZO npc01;
-vector<NPC_R> robbot(8);
+vector<NPC_R> robbot(0);
 sCAMERA followCam;
 BOOL isShowCursor = FALSE;
 BOOL isShowHelpUI = TRUE;
@@ -1439,39 +1439,39 @@ void FyMain(int argc, char **argv){
 	room.AddObject(tID);
 
 	// load audio
-	audio_Atk_main.ID(FyCreateAudio());
-	audio_Atk_main.Load("01_pose07");
-	audio_die_main.ID(FyCreateAudio());
-	audio_die_main.Load("02_pose25");
-	audio_beAtkedMain_main.ID(FyCreateAudio());
-	audio_beAtkedMain_main.Load("02_pose10");
-	audio_beAtkID0_main.ID(FyCreateAudio());
-	audio_beAtkID0_main.Load("01_pose12");
-
-	audio_Atk_NPC_R.ID(FyCreateAudio());
-	audio_Atk_NPC_R.Load("02_pose22");
-	audio_die_NPC_R.ID(FyCreateAudio());
-	audio_die_NPC_R.Load("03_pose25");
-	audio_beAtkedMain_NPC_R.ID(FyCreateAudio());
-	audio_beAtkedMain_NPC_R.Load("03_pose22");
-	audio_beAtkID0_NPC_R.ID(FyCreateAudio());
-	audio_beAtkID0_NPC_R.Load("03_pose22");
-
-	audio_Atk_DONZO.ID(FyCreateAudio());
-	audio_Atk_DONZO.Load("02_pose07");
-	audio_die_DONZO.ID(FyCreateAudio());
-	audio_die_DONZO.Load("02_pose25");
-	audio_beAtkedMain_DONZO.ID(FyCreateAudio());
-	audio_beAtkedMain_DONZO.Load("02_pose10");
-	audio_beAtkID0_DONZO.ID(FyCreateAudio());
-	audio_beAtkID0_DONZO.Load("02_pose10");
+	// audio_Atk_main.ID(FyCreateAudio());
+	// audio_Atk_main.Load("01_pose07");
+	// audio_die_main.ID(FyCreateAudio());
+	// audio_die_main.Load("02_pose25");
+	// audio_beAtkedMain_main.ID(FyCreateAudio());
+	// audio_beAtkedMain_main.Load("02_pose10");
+	// audio_beAtkID0_main.ID(FyCreateAudio());
+	// audio_beAtkID0_main.Load("01_pose12");
+	// 
+	// audio_Atk_NPC_R.ID(FyCreateAudio());
+	// audio_Atk_NPC_R.Load("02_pose22");
+	// audio_die_NPC_R.ID(FyCreateAudio());
+	// audio_die_NPC_R.Load("03_pose25");
+	// audio_beAtkedMain_NPC_R.ID(FyCreateAudio());
+	// audio_beAtkedMain_NPC_R.Load("03_pose22");
+	// audio_beAtkID0_NPC_R.ID(FyCreateAudio());
+	// audio_beAtkID0_NPC_R.Load("03_pose22");
+	// 
+	// audio_Atk_DONZO.ID(FyCreateAudio());
+	// audio_Atk_DONZO.Load("02_pose07");
+	// audio_die_DONZO.ID(FyCreateAudio());
+	// audio_die_DONZO.Load("02_pose25");
+	// audio_beAtkedMain_DONZO.ID(FyCreateAudio());
+	// audio_beAtkedMain_DONZO.Load("02_pose10");
+	// audio_beAtkID0_DONZO.ID(FyCreateAudio());
+	// audio_beAtkID0_DONZO.Load("02_pose10");
 
 	// load the character
 	FySetModelPath("Data\\NTU\\\\Characters");
 	FySetTexturePath("Data\\NTU\\\\Characters");
 	FySetCharacterPath("Data\\NTU\\\\Characters");
 
-	mainChar.initial_pos(3941.0f, -3517.0f, 5.0f);
+	mainChar.initial_pos(3500.0f, -3000.0f, 285.0f);
 	mainChar.loadPlayer(scene, "Lyubu");
 	mainChar.load_bloodbar(scene);
 
@@ -1479,11 +1479,13 @@ void FyMain(int argc, char **argv){
 	npc01.loadPlayer(scene, "Donzo");
 	npc01.actor.TurnRight(180);
 
-	for( int i=0 ; i<(int)robbot.size() ; i++ ){
-		robbot[i].initial_pos(4050.0f+rand()%400-200, -3670.0f+rand()%400-200, 285.0f);
-		robbot[i].loadPlayer(scene, "Robber02");
-		robbot[i].actor.TurnRight(180);
-	}
+	// for( int i=0 ; i<(int)robbot.size() ; i++ ){
+	// 	robbot[i].initial_pos(4050.0f+rand()%400-200, -3670.0f+rand()%400-200, 285.0f);
+	// 	robbot[i].loadPlayer(scene, "Robber02");
+	// 	robbot[i].actor.TurnRight(180);
+	// }
+
+	NewWave(1,0);
 
 	// put the character on terrain
 	float pos[3], fDir[3], uDir[3];
@@ -1520,6 +1522,7 @@ void FyMain(int argc, char **argv){
 	FyDefineHotKey(FY_4, Attack, FALSE);
 
 	FyDefineHotKey(FY_F2, cursorCtr, FALSE);
+	FyDefineHotKey(FY_P, CallNewWave, FALSE);
 
 	// define some mouse functions
 	FyBindMouseFunction(LEFT_MOUSE, Attack_mouse_L, NULL, NULL, NULL);
@@ -1530,6 +1533,7 @@ void FyMain(int argc, char **argv){
 	// bind timers, frame rate = 30 fps
 	FyBindTimer(0, 30.0f, GameAI, TRUE);
 	FyBindTimer(1, 30.0f, RenderIt, TRUE);
+	FyBindTimer(2, 10.0f, GlobalTimer, TRUE);
 
 	// invoke the system
 	FyInvokeFly(TRUE);
@@ -1658,8 +1662,6 @@ void GameAI(int skip){
 			npc01.Attr.getHit_H(mainChar.Attr);
 			npc01.GetHurt_H(skip);
 		}
-		
-		
 	}
 
 	for( int i=0 ; i<(int)robbot.size() ; i++ )
@@ -1674,10 +1676,6 @@ void GameAI(int skip){
 				robbot[i].GetHurt_H(skip);
 			}
 		}
-		
-
-
-		
 
 		if(robbot[i].doAtk)
 		{
@@ -1750,7 +1748,7 @@ void RenderIt(int skip){
 	
 	//
 	char HP[256], bkcnt[256];
-	sprintf(HP, "HP: %8.3f ", npc01.Attr.HP);
+	sprintf(HP, "HP: %8.3f %d TIME[%lf]", npc01.Attr.HP, robbot[0].status, globalTime);
 	sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
 	//
 	
@@ -1768,7 +1766,7 @@ void RenderIt(int skip){
 	sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
 	sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
 	sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
-	 sprintf(testS,"test Value: %d\n", score);
+	sprintf(testS,"test Value: %d\n", score);
 	
 	text.Write(posS, 20, 35, 255, 255, 0);
 	text.Write(fDirS, 20, 50, 255, 255, 0);
@@ -1778,13 +1776,20 @@ void RenderIt(int skip){
 	text.Write(charDir, 20, 110, 255, 255, 0);
 	
 	text.Write(HP, 20, 130, 255, 255, 0);
-	text.Write(bkcnt, 20, 150, 255, 255, 0);
+	text.Write(testS, 20, 150, 255, 255, 0);
 	
 	text.End();
 	
 	// swap buffer
 	FySwapBuffers();
 }
+
+
+void GlobalTimer(int skip)
+{
+	globalTime +=0.1;
+}
+
 
 void cursorCtr(BYTE code, BOOL4 value){
 	if( code == FY_F2 && value )
@@ -1842,6 +1847,30 @@ void Movement(BYTE code, BOOL4 value){
 	mainChar.changeMove = true;
    // Homework #01 part 2
 }
+
+
+void CallNewWave(BYTE code,BOOL4 value)
+{
+	if(code == FY_P  ||  code == 37)
+	{
+		NewWave(5,1);
+	}
+}
+
+
+void NewWave(int fishNum,int bossNum)
+{
+
+	for(int i =0;i<fishNum;i++)
+	{
+		NPC_R robot = NPC_R(3320.0f+rand()%460,-4290.0f+rand()%140,285.0f);		
+		robot.loadPlayer(scene,"Robber02");			
+		robbot.insert(robbot.end(),robot);
+	}		
+	//robbot[i].actor.TurnRight(180);
+}
+
+
 
 void QuitGame(BYTE code, BOOL4 value)
 {

@@ -1,0 +1,19 @@
+# Depth Map Shaders Description File
+# C.Wang 0831, 2011
+#
+
+Effect DepthMap.fx
+
+Technique 4
+   0 sDepthMap 0
+   1 sUnitDepthMap 0
+   2 sDistanceMap 0
+   3 sClearBackground 0
+   
+Constant 6
+   0 E Matrix LocalToScreen mWVP
+   1 E Matrix LocalToView mWV
+   2 E Camera Far current farPlane
+   3 E Camera Near current nearPlane
+   4 E Data 0 pixelSize 2 ByTech 1 3
+   5 E Data 2 farD ByTech 1 3
