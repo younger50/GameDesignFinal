@@ -775,12 +775,13 @@ public:
 	
 
 private:
-	bool statusCheck; //æ˜¯å¦ç¬¬ä¸€æ¬¡é€²å…¥é€™å€‹status tureç‚ºç¬¬ä¸€æ¬¡é€²å…¥ falseç‚ºä¸æ˜¯
+	bool statusCheck; //¬O§_²Ä¤@¦¸¶i¤J³o­Óstatus ture¬°²Ä¤@¦¸¶i¤J false¬°¤£¬O
 
 
 public:
 	ENEMY(float posx=0.0,float posy =0.0, float posz=0.0):PLAYER(posx,posy,posz)
 	{
+		actorType =4;
 		moveStep=5.0f;
 		status = enemy_idle;
 		statusTime = 0.0;
@@ -822,7 +823,19 @@ public:
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 
 		if( getSysAction==beAtkedMainID ){
-			audio_beAtkedMain.Play(ONCE);
+			switch(actorType)
+			{
+				case 0:
+					audio_beAtkedMain_main.Play(ONCE);
+					break;
+				case 2:
+					audio_beAtkedMain_DONZO.Play(ONCE);
+					break;
+				default:
+					audio_beAtkedMain_NPC_R.Play(ONCE);
+					break;
+			}
+			
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -831,7 +844,18 @@ public:
 			}
 		}
 		else if( getSysAction==beAtkID0 ){
-			audio_beAtkID0.Play(ONCE);
+			switch(actorType)
+			{
+				case 0:
+					audio_beAtkID0_main.Play(ONCE);
+					break;
+				case 2:
+					audio_beAtkID0_DONZO.Play(ONCE);
+					break;
+				default:
+					audio_beAtkID0_NPC_R.Play(ONCE);
+					break;
+			}
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -891,7 +915,7 @@ public:
 
 
 
-	void chageStatus(int statusToChange)	//æ”¹è®Šç‹€æ…‹ä¸¦è¨˜éŒ„ç•¶ä¸‹æ™‚é–“
+	void chageStatus(int statusToChange)	//§ïÅÜª¬ºA¨Ã°O¿ı·í¤U®É¶¡
 	{
 		statusCheck = true;
 		status=statusToChange;
@@ -912,13 +936,13 @@ public:
 			//actor.SetCurrentAction(NULL,0,idleID);
 		}		
 		
-		if((mainChar.pos-pos).magnitude()<300)//è‹¥è·é›¢300æœ‰æ•µäºº é€²å…¥è¿½è¹¤æ¨¡å¼
+		if((mainChar.pos-pos).magnitude()<300)//­Y¶ZÂ÷300¦³¼Ä¤H ¶i¤J°lÂÜ¼Ò¦¡
 		{
 			chageStatus(enemy_surrondPlayer);
 			return;
-		}//é€²å…¥åŒ…åœ
+		}//¶i¤J¥]³ò
 
-		if((globalTime - statusTime)>randomIdleTime)//idle 2~5ç§’å‰‡é€²æ”»åŸå ¡
+		if((globalTime - statusTime)>randomIdleTime)//idle 2~5¬í«h¶i§ğ«°³ù
 		{
 				chageStatus(enemy_attkCasle);							
 				return;
@@ -946,13 +970,13 @@ public:
 			actor.SetDirection(_fDir, _uDir);
 			
 
-		if((mainChar.pos-pos).magnitude()<300)//è‹¥è·é›¢300æœ‰æ•µäºº é€²å…¥è¿½è¹¤æ¨¡å¼
+		if((mainChar.pos-pos).magnitude()<300)//­Y¶ZÂ÷300¦³¼Ä¤H ¶i¤J°lÂÜ¼Ò¦¡
 		{
 			chageStatus(enemy_surrondPlayer);
 			return;
-		}//é€²å…¥åŒ…åœ
+		}//¶i¤J¥]³ò
 		
-		if((globalTime - statusTime)>2) //å‰é€²2ç§’é€²å…¥idle
+		if((globalTime - statusTime)>2) //«e¶i2¬í¶i¤Jidle
 		{							
 			chageStatus(enemy_idle);
 		}
@@ -1017,7 +1041,7 @@ public:
 			actor.SetDirection(_fDir, _uDir);
 
 
-		if((mainChar.pos-pos).magnitude() <= 200)	//è·é›¢æŠµé”350 æº–å‚™æ”»æ“Š
+		if((mainChar.pos-pos).magnitude() <= 200)	//¶ZÂ÷©è¹F350 ·Ç³Æ§ğÀ»
 		{	
 			isMoving=false;			
 			actor.SetCurrentAction(NULL,0,idleID);
@@ -1026,7 +1050,7 @@ public:
 		}
 
 		
-		if((mainChar.pos-pos).magnitude() > 600) //è·é›¢å¤ªé  ->ç›´æ¥æ”»åŸ
+		if((mainChar.pos-pos).magnitude() > 600) //¶ZÂ÷¤Ó»· ->ª½±µ§ğ«°
 		{		
 			chageStatus(enemy_attkCasle);
 			return;
@@ -1058,7 +1082,7 @@ public:
 			actor.SetDirection(_fDir, _uDir);
 
 
-		if((mainChar.pos-pos).magnitude() > 600) //è·é›¢å¤ªé  ->ç›´æ¥æ”»åŸ
+		if((mainChar.pos-pos).magnitude() > 600) //¶ZÂ÷¤Ó»· ->ª½±µ§ğ«°
 		{		
 			chageStatus(enemy_attkCasle);
 			return;
@@ -1071,7 +1095,7 @@ public:
 		}
 
 
-		if((globalTime - statusTime)>1) //åœæ»¯å…©ç§’ 20%æ©Ÿç‡ç™¼å‹•æ”»æ“Š
+		if((globalTime - statusTime)>1) //°±º¢¨â¬í 20%¾÷²vµo°Ê§ğÀ»
 		{			
 			if(rand()%10>5)
 			{
