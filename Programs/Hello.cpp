@@ -22,17 +22,22 @@ using namespace std;
 
 #define PI 3.141592658
 
+int _WIN_W = 1024;				// window width
+int _WIN_H = 768;				// window height
+
 VIEWPORTid vID;                 // the major viewport
 SCENEid sID;                    // the 3D scene
+SCENEid sID_2D;                 // the 2D scene
 OBJECTid cID, tID;              // the main camera and the terrain for terrain following
 CHARACTERid actorID;            // the major character
-FnScene scene;
+FnScene scene, scene_2D;
 
-ROOMid terrainRoomID = FAILED_ID;
-TEXTid textID = FAILED_ID;
-OBJECTid lineTestID = FAILED_ID;
+ROOMid terrainRoomID	= FAILED_ID;
+TEXTid textID			= FAILED_ID;
+OBJECTid lineTestID		= FAILED_ID;
+OBJECTid uiBoard		= FAILED_ID;  // the sprite
 
-
+FnSprite ui_keyHint;
 
 MEDIAid mmID;
 
@@ -189,8 +194,6 @@ public:
 	FnAudio audio_die;
 	FnAudio audio_beAtkID0;
 	//FnAudio audio_walk;
-
-	
 
 	PLAYER(float posx = 0.0, float posy = 0.0, float posz = 0.0){
 		// pos(posx, posy, posz);
@@ -502,8 +505,6 @@ public:
 	ACTIONid beAtkID[2];
 	ACTIONid atkID[3];
 
-	
-
 public:
 	MAINCHAR(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
 	}
@@ -512,14 +513,14 @@ public:
 	void loadPlayerAction(){
 
 		//load audio
-		audio_Atk.ID(FyCreateAudio());
-		audio_Atk.Load("01_pose07");
-		audio_die.ID(FyCreateAudio());
-		audio_die.Load("02_pose25");
-		audio_beAtkedMain.ID(FyCreateAudio());
-		audio_beAtkedMain.Load("02_pose10");
-		audio_beAtkID0.ID(FyCreateAudio());
-		audio_beAtkID0.Load("01_pose12");
+		// audio_Atk.ID(FyCreateAudio());
+		// audio_Atk.Load("01_pose07");
+		// audio_die.ID(FyCreateAudio());
+		// audio_die.Load("02_pose25");
+		// audio_beAtkedMain.ID(FyCreateAudio());
+		// audio_beAtkedMain.Load("02_pose10");
+		// audio_beAtkID0.ID(FyCreateAudio());
+		// audio_beAtkID0.Load("01_pose12");
 		
 		// Get character actions
 		idleID = actor.GetBodyAction(NULL, "CombatIdle");
@@ -671,14 +672,14 @@ public:
 
 	void loadPlayerAction(){
 		//load audio
-		audio_Atk.ID(FyCreateAudio());
-		audio_Atk.Load("02_pose22");
-		audio_die.ID(FyCreateAudio());
-		audio_die.Load("03_pose25");
-		audio_beAtkedMain.ID(FyCreateAudio());
-		audio_beAtkedMain.Load("03_pose22");
-		audio_beAtkID0.ID(FyCreateAudio());
-		audio_beAtkID0.Load("03_pose22");
+		// audio_Atk.ID(FyCreateAudio());
+		// audio_Atk.Load("02_pose22");
+		// audio_die.ID(FyCreateAudio());
+		// audio_die.Load("03_pose25");
+		// audio_beAtkedMain.ID(FyCreateAudio());
+		// audio_beAtkedMain.Load("03_pose22");
+		// audio_beAtkID0.ID(FyCreateAudio());
+		// audio_beAtkID0.Load("03_pose22");
 
 		// Get character actions
 		idleID = actor.GetBodyAction(NULL, "CombatIdle");
@@ -714,14 +715,14 @@ public:
 	void loadPlayerAction(){
 
 		//load audio
-		audio_Atk.ID(FyCreateAudio());
-		audio_Atk.Load("02_pose07");
-		audio_die.ID(FyCreateAudio());
-		audio_die.Load("02_pose25");
-		audio_beAtkedMain.ID(FyCreateAudio());
-		audio_beAtkedMain.Load("02_pose10");
-		audio_beAtkID0.ID(FyCreateAudio());
-		audio_beAtkID0.Load("02_pose10");
+		// audio_Atk.ID(FyCreateAudio());
+		// audio_Atk.Load("02_pose07");
+		// audio_die.ID(FyCreateAudio());
+		// audio_die.Load("02_pose25");
+		// audio_beAtkedMain.ID(FyCreateAudio());
+		// audio_beAtkedMain.Load("02_pose10");
+		// audio_beAtkID0.ID(FyCreateAudio());
+		// audio_beAtkID0.Load("02_pose10");
 
 
 		// Get character actions
@@ -857,6 +858,8 @@ DONZO npc01;
 vector<NPC_R> robbot(8);
 sCAMERA followCam;
 BOOL isShowCursor = FALSE;
+BOOL isShowHelpUI = TRUE;
+
 
 /*------------------
   the main program
@@ -864,21 +867,34 @@ BOOL isShowCursor = FALSE;
  -------------------*/
 void FyMain(int argc, char **argv){
 	// create a new world
-	BOOL4 beOK = FyStartFlyWin32("Homewrok03", 50, 20, 1024, 768, FALSE);
+	BOOL4 beOK = FyStartFlyWin32("Homewrok03", 50, 30, _WIN_W, _WIN_H, FALSE);
 
 	// setup the data searching paths
 	FySetModelPath("Data\\NTU\\\\Scenes");
 	FySetTexturePath("Data\\NTU\\\\Scenes\\Textures");
+	// FySetTexturePath("Data\\Textures");
 	FySetScenePath("Data\\NTU\\\\Scenes");
 	FySetShaderPath("Data\\NTU\\\\Shaders");
-	FySetAudioPath("Data\\NTU\\\\Audio");
+	FySetAudioPath("Data\\Audio");
 	
 	FyBeginMedia("Data\\NTU\\\\Media", 2);
 
 	// create a viewport
-	vID = FyCreateViewport(0, 0, 1024, 768);
+	vID = FyCreateViewport(0, 0, _WIN_W, _WIN_H);
 	FnViewport vp;
 	vp.ID(vID);
+	vp.SetBackgroundColor(0.2f, 0.2f, 0.2f);
+
+	// Create Key Hint Panel
+	sID_2D = FyCreateScene(1);
+	scene_2D.Object(sID_2D);
+	scene_2D.SetSpriteWorldSize(_WIN_W, _WIN_H);         // 2D scene size in pixels
+
+	uiBoard = scene_2D.CreateObject(SPRITE);
+	ui_keyHint.Object(uiBoard);
+	ui_keyHint.SetSize(1024, 350);
+	ui_keyHint.SetImage("keyHint01.png", 0, NULL, 0, NULL, NULL, MANAGED_MEMORY, FALSE, FALSE);
+	ui_keyHint.SetPosition(0, 20, 0);
 
 	// create a 3D scene
 	sID = FyCreateScene(10);
@@ -889,7 +905,7 @@ void FyMain(int argc, char **argv){
 	scene.SetAmbientLights(1.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.6f);
 
 	//load background  music
-	mmID = FyCreateMediaPlayer("MUSIC_village.mp3", 0, 0, 800, 600);
+	mmID = FyCreateMediaPlayer("MUSIC_village.mp3", 0, 0, _WIN_W, _WIN_H);
 	FnMedia mP;
 	mP.Object(mmID);
 	mP.Play(LOOP);
@@ -943,7 +959,7 @@ void FyMain(int argc, char **argv){
 
 	// create a text object
 	textID = FyCreateText("Trebuchet MS", 18, FALSE, FALSE);
-
+	
 	// set Hotkeys
 	FyDefineHotKey(FY_ESCAPE, QuitGame, FALSE);  // escape for quiting the game
 	FyDefineHotKey(FY_UP, Movement, FALSE);      // Up for moving forward
@@ -1086,75 +1102,78 @@ void GameAI(int skip){
 }
 
 void RenderIt(int skip){
-   FnViewport vp;
-
-   // render the whole scene
-   vp.ID(vID);
-   vp.Render3D(followCam.ID, TRUE, TRUE);
-
-   // get camera's data
-   float pos[3], fDir[3], uDir[3];
-   followCam.camera.GetPosition(pos);
-   followCam.camera.GetDirection(fDir, uDir);
-
-   // show frame rate
-   static char string[128];
-   if (frame == 0) {
-      FyTimerReset(0);
-   }
-
-   if (frame/10*10 == frame) {
-      float curTime;
-
-      curTime = FyTimerCheckTime(0);
-      sprintf(string, "Fps: %6.2f", frame/curTime);
-   }
-
-   frame += skip;
-   if (frame >= 1000) {
-      frame = 0;
-   }
-
-   FnText text;
-   text.ID(textID);
-
-   text.Begin(vID);
-   text.Write(string, 20, 20, 255, 0, 0);
-
-   //
-   char HP[256], bkcnt[256];
-   sprintf(HP, "HP: %8.3f ", npc01.Attr.HP);
-   sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
-   //
-
-   char posS[256], fDirS[256], uDirS[256], temp[256];
-   char charPos[256], charDir[256];
-   followCam.camera.GetPosition(pos);
-   followCam.camera.GetDirection(fDir, uDir);
-   sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
-   sprintf(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
-   sprintf(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
-
-   mainChar.actor.GetPosition(pos);
-   mainChar.actor.GetDirection(fDir, uDir);
-   sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
-   sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
-   sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
-
-   text.Write(posS, 20, 35, 255, 255, 0);
-   text.Write(fDirS, 20, 50, 255, 255, 0);
-   text.Write(uDirS, 20, 65, 255, 255, 0);
-   text.Write(temp, 20, 80, 255, 255, 0);
-   text.Write(charPos, 20, 95, 255, 255, 0);
-   text.Write(charDir, 20, 110, 255, 255, 0);
-
-   text.Write(HP, 20, 130, 255, 255, 0);
-   text.Write(bkcnt, 20, 150, 255, 255, 0);
-   
-   text.End();
-
-   // swap buffer
-   FySwapBuffers();
+	FnViewport vp;
+	
+	// render the whole scene
+	vp.ID(vID);
+	
+	vp.Render3D(followCam.ID, TRUE, TRUE);
+	if( isShowHelpUI )
+		vp.RenderSprites(sID_2D, FALSE, TRUE);
+	
+	// get camera's data
+	float pos[3], fDir[3], uDir[3];
+	followCam.camera.GetPosition(pos);
+	followCam.camera.GetDirection(fDir, uDir);
+	
+	// show frame rate
+	static char string[128];
+	if (frame == 0) {
+	   FyTimerReset(0);
+	}
+	
+	if (frame/10*10 == frame) {
+	   float curTime;
+	
+	   curTime = FyTimerCheckTime(0);
+	   sprintf(string, "Fps: %6.2f", frame/curTime);
+	}
+	
+	frame += skip;
+	if (frame >= 1000) {
+	   frame = 0;
+	}
+	
+	FnText text;
+	text.ID(textID);
+	
+	text.Begin(vID);
+	text.Write(string, 20, 20, 255, 0, 0);
+	
+	//
+	char HP[256], bkcnt[256];
+	sprintf(HP, "HP: %8.3f ", npc01.Attr.HP);
+	sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
+	//
+	
+	char posS[256], fDirS[256], uDirS[256], temp[256];
+	char charPos[256], charDir[256];
+	followCam.camera.GetPosition(pos);
+	followCam.camera.GetDirection(fDir, uDir);
+	sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
+	sprintf(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
+	sprintf(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
+	
+	mainChar.actor.GetPosition(pos);
+	mainChar.actor.GetDirection(fDir, uDir);
+	sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
+	sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
+	sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
+	
+	text.Write(posS, 20, 35, 255, 255, 0);
+	text.Write(fDirS, 20, 50, 255, 255, 0);
+	text.Write(uDirS, 20, 65, 255, 255, 0);
+	text.Write(temp, 20, 80, 255, 255, 0);
+	text.Write(charPos, 20, 95, 255, 255, 0);
+	text.Write(charDir, 20, 110, 255, 255, 0);
+	
+	text.Write(HP, 20, 130, 255, 255, 0);
+	text.Write(bkcnt, 20, 150, 255, 255, 0);
+	
+	text.End();
+	
+	// swap buffer
+	FySwapBuffers();
 }
 
 void cursorCtr(BYTE code, BOOL4 value){
@@ -1189,6 +1208,11 @@ void Attack(BYTE code, BOOL4 value){
 	}
 }
 void Movement(BYTE code, BOOL4 value){
+	if( code == FY_F1 ){
+		if( value )
+			isShowHelpUI = !isShowHelpUI;
+		return;
+	}
 	if(code == 38 || code == FY_W ){
 		mainChar.moveKeys[_MV_FW] = (value) ? true : false;
 	}
