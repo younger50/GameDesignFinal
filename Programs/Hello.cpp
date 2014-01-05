@@ -41,6 +41,23 @@ FnSprite ui_keyHint;
 
 MEDIAid mmID;
 
+
+//------audio--------
+FnAudio audio_Atk_main ;
+FnAudio audio_beAtkedMain_main;
+FnAudio audio_die_main;
+FnAudio audio_beAtkID0_main;
+FnAudio audio_Atk_NPC_R ;
+FnAudio audio_beAtkedMain_NPC_R;
+FnAudio audio_die_NPC_R;
+FnAudio audio_beAtkID0_NPC_R;
+FnAudio audio_Atk_DONZO ;
+FnAudio audio_beAtkedMain_DONZO;
+FnAudio audio_die_DONZO;
+FnAudio audio_beAtkID0_DONZO;
+
+//--------------------
+
 // some globals
 int frame = 0;
 int oldX, oldY, oldXM, oldYM, oldXMM, oldYMM;
@@ -171,6 +188,8 @@ public:
 	bool doAtk;
 	int AtkKey;
 
+	int actorType;
+
 public:
 	ATTRIBUTE Attr;
 
@@ -189,10 +208,10 @@ public:
 	OBJECTid baseID;                // the base object ID of the main character
 
 	//audio
-	FnAudio audio_Atk;
-	FnAudio audio_beAtkedMain;
-	FnAudio audio_die;
-	FnAudio audio_beAtkID0;
+	//FnAudio audio_Atk;
+	//FnAudio audio_beAtkedMain;
+	//FnAudio audio_die;
+	//FnAudio audio_beAtkID0;
 	//FnAudio audio_walk;
 
 	PLAYER(float posx = 0.0, float posy = 0.0, float posz = 0.0){
@@ -256,7 +275,19 @@ public:
 
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 		if( getSysAction==beAtkedMainID ){
-			audio_beAtkedMain.Play(ONCE);
+			switch(actorType)
+			{
+				case 0:
+					audio_beAtkedMain_main.Play(ONCE);
+					break;
+				case 2:
+					audio_beAtkedMain_DONZO.Play(ONCE);
+					break;
+				default:
+					audio_beAtkedMain_NPC_R.Play(ONCE);
+					break;
+			}
+
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -265,7 +296,18 @@ public:
 			}
 		}
 		else if( getSysAction==beAtkID0 ){
-			audio_beAtkID0.Play(ONCE);
+			switch(actorType)
+			{
+				case 0:
+					audio_beAtkID0_main.Play(ONCE);
+					break;
+				case 2:
+					audio_beAtkID0_DONZO.Play(ONCE);
+					break;
+				default:
+					audio_beAtkID0_NPC_R.Play(ONCE);
+					break;
+			}
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -402,7 +444,18 @@ public:
 				//bb1.Show(FALSE);
 				//bb1.~FnBillboard();
 
-				audio_die.Play(ONCE);
+				switch(actorType)
+				{
+					case 0:
+						audio_die_main.Play(ONCE);
+						break;
+					case 2:
+						audio_die_DONZO.Play(ONCE);
+						break;
+					default:
+						audio_die_NPC_R.Play(ONCE);
+						break;
+				}
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
 			}
@@ -442,7 +495,18 @@ public:
 				//bb1.Show(FALSE);
 				//bb1.~FnBillboard();
 
-				audio_die.Play(ONCE);
+				switch(actorType)
+				{
+					case 0:
+						audio_die_main.Play(ONCE);
+						break;
+					case 2:
+						audio_die_DONZO.Play(ONCE);
+						break;
+					default:
+						audio_die_NPC_R.Play(ONCE);
+						break;
+				}
 				actor.SetCurrentAction(0, NULL, dieID, 20.0);
 				isGameOver = true;
 
@@ -507,14 +571,15 @@ public:
 
 public:
 	MAINCHAR(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
+		actorType = 0; //MAINCHAR
 	}
 	~MAINCHAR(){;}
 
 	void loadPlayerAction(){
-
+		actorType = 0;
 		//load audio
-		// audio_Atk.ID(FyCreateAudio());
-		// audio_Atk.Load("01_pose07");
+		/*audio_Atk.ID(FyCreateAudio());
+		audio_Atk.Load("01_pose07");*/
 		// audio_die.ID(FyCreateAudio());
 		// audio_die.Load("02_pose25");
 		// audio_beAtkedMain.ID(FyCreateAudio());
@@ -622,7 +687,19 @@ public:
 
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 		if( getSysAction==tmp ){
-			audio_Atk.Play(ONCE);
+			switch(actorType)
+			{
+			case 0:
+				audio_Atk_main.Play(ONCE);
+				break;
+			case 2:
+				audio_Atk_DONZO.Play(ONCE);
+				break;
+			default:
+				audio_Atk_NPC_R.Play(ONCE);
+				break;
+			}
+			
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
 			if( blockCnt==0 ){
 				curPoseID = idleID;
@@ -666,11 +743,13 @@ public:
 	// ACTIONid beAtkID0;
 public:
 	NPC_R(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
+		actorType = 1; //NPC_R
 		;
 	}
 	~NPC_R(){;}
 
 	void loadPlayerAction(){
+		actorType = 1; //NPC_R
 		//load audio
 		// audio_Atk.ID(FyCreateAudio());
 		// audio_Atk.Load("02_pose22");
@@ -708,12 +787,13 @@ public:
 	// ACTIONid beAtkID0;
 public:
 	DONZO(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
+		actorType = 2; //DONZO
 		;
 	}
 	~DONZO(){;}
 
 	void loadPlayerAction(){
-
+		actorType = 2; //DONZO
 		//load audio
 		// audio_Atk.ID(FyCreateAudio());
 		// audio_Atk.Load("02_pose07");
@@ -875,7 +955,7 @@ void FyMain(int argc, char **argv){
 	// FySetTexturePath("Data\\Textures");
 	FySetScenePath("Data\\NTU\\\\Scenes");
 	FySetShaderPath("Data\\NTU\\\\Shaders");
-	FySetAudioPath("Data\\Audio");
+	FySetAudioPath("Data\\NTU\\\\Audio");
 	
 	FyBeginMedia("Data\\NTU\\\\Media", 2);
 
@@ -922,6 +1002,34 @@ void FyMain(int argc, char **argv){
 	FnRoom room;
 	room.ID(terrainRoomID);
 	room.AddObject(tID);
+
+	// load audio
+	audio_Atk_main.ID(FyCreateAudio());
+	audio_Atk_main.Load("01_pose07");
+	audio_die_main.ID(FyCreateAudio());
+	audio_die_main.Load("02_pose25");
+	audio_beAtkedMain_main.ID(FyCreateAudio());
+	audio_beAtkedMain_main.Load("02_pose10");
+	audio_beAtkID0_main.ID(FyCreateAudio());
+	audio_beAtkID0_main.Load("01_pose12");
+
+	audio_Atk_NPC_R.ID(FyCreateAudio());
+	audio_Atk_NPC_R.Load("02_pose22");
+	audio_die_NPC_R.ID(FyCreateAudio());
+	audio_die_NPC_R.Load("03_pose25");
+	audio_beAtkedMain_NPC_R.ID(FyCreateAudio());
+	audio_beAtkedMain_NPC_R.Load("03_pose22");
+	audio_beAtkID0_NPC_R.ID(FyCreateAudio());
+	audio_beAtkID0_NPC_R.Load("03_pose22");
+
+	audio_Atk_DONZO.ID(FyCreateAudio());
+	audio_Atk_DONZO.Load("02_pose07");
+	audio_die_DONZO.ID(FyCreateAudio());
+	audio_die_DONZO.Load("02_pose25");
+	audio_beAtkedMain_DONZO.ID(FyCreateAudio());
+	audio_beAtkedMain_DONZO.Load("02_pose10");
+	audio_beAtkID0_DONZO.ID(FyCreateAudio());
+	audio_beAtkID0_DONZO.Load("02_pose10");
 
 	// load the character
 	FySetModelPath("Data\\NTU\\\\Characters");
