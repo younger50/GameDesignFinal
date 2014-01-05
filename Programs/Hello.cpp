@@ -25,6 +25,8 @@ using namespace std;
 int _WIN_W = 1024;				// window width
 int _WIN_H = 768;				// window height
 
+
+
 VIEWPORTid vID;                 // the major viewport
 SCENEid sID;                    // the 3D scene
 SCENEid sID_2D;                 // the 2D scene
@@ -38,6 +40,11 @@ OBJECTid lineTestID		= FAILED_ID;
 OBJECTid uiBoard		= FAILED_ID;  // the sprite
 
 FnSprite ui_keyHint;
+
+VECTOR3D castleDirection;
+double globalTime;
+float test;
+int score;
 
 MEDIAid mmID;
 
@@ -81,6 +88,7 @@ void Attack(BYTE, BOOL4);
 // timer callbacks
 void GameAI(int);
 void RenderIt(int);
+void GlobalTimer(int);
 
 // mouse callbacks
 void InitPivot(int, int);
@@ -94,6 +102,9 @@ void Attack_mouse_L(int x, int y);
 void Attack_mouse_R(int x, int y);
 
 float focusArea[3];
+
+void NewWave(int fishNum,int bossNum);
+void CallNewWave(BYTE code,BOOL4 value);
 
 float ptDist(float a[3], float b[3]){
 	float res[3] = {
@@ -738,11 +749,364 @@ public:
 	}
 }MAINCHAR;
 
-typedef class NPC_R : public PLAYER{
+//enemy AI Parameters
+
+#define enemy_idle 0
+#define enemy_turnToCasle 1
+#define enemy_attkCasle 2
+
+#define enemy_surrondPlayer 3
+#define enemy_turnToPlayer 4
+#define enemy_goForPlayer 5
+#define enemy_attkPlayer 6
+#define enemy_dead 7
+#define enemy_DoAtk 8
+
+
+typedef class ENEMY : public PLAYER
+{
+public:
+	float moveStep;
+	int status;
+	float statusTime;
+	float randomIdleTime;
+	bool isArrive;
+	bool isMoving;
+	
+
+private:
+	bool statusCheck; //是否第一次進入這個status ture為第一次進入 false為不是
+
+
+public:
+	ENEMY(float posx=0.0,float posy =0.0, float posz=0.0):PLAYER(posx,posy,posz)
+	{
+		moveStep=5.0f;
+		status = enemy_idle;
+		statusTime = 0.0;
+		statusCheck = true;		
+		isArrive =false;
+		isMoving =false;
+		;}
+
+	~ENEMY(){;}		
+
+	void arriveCheck()
+	{
+
+		if(isArrive==false && pos.y >-3000)
+		{
+			isArrive = true;
+			score +=1;
+		}
+	}
+
+	void deadCheck()
+	{
+		if(isGameOver)
+		{
+			status=enemy_dead;
+		}
+	}
+
+	void Play(int skip){
+
+		actor.Play(LOOP, (float) skip, FALSE, TRUE);
+
+		if( Attr.isDie() ){
+			actor.Play(ONCE, (float) skip, FALSE, TRUE);
+			blockCnt = -1;
+			return;
+		}
+
+		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
+
+		if( getSysAction==beAtkedMainID ){
+			audio_beAtkedMain.Play(ONCE);
+			actor.Play(ONCE, (float) skip, FALSE, TRUE);
+			if( blockCnt==0 ){
+				curPoseID = idleID;
+				blockCnt  = -1;
+				actor.SetCurrentAction(NULL, 0, idleID, 0.0);
+			}
+		}
+		else if( getSysAction==beAtkID0 ){
+			audio_beAtkID0.Play(ONCE);
+			actor.Play(ONCE, (float) skip, FALSE, TRUE);
+			if( blockCnt==0 ){
+				curPoseID = idleID;
+				blockCnt  = -1;
+				actor.SetCurrentAction(NULL, 0, idleID, 0.0);
+			}
+		}
+
+		if( Play_preIdf(skip) )
+			return;
+
+		 if( doAtk ){
+		 	if( curPoseID != tmpAtkID ){
+		 		actor.SetCurrentAction(NULL, 0, tmpAtkID, 0.0);
+		 		blockCnt = 5;
+		 		curPoseID = tmpAtkID;
+		 	}
+		 	return;
+		 }
+	}
+
+	void MoveChar(int skip, POINT3D fCamPos){
+		if( !isMoving)
+		{
+			return;
+		}
+
+		if( blockCnt == -1 )		// IDLE
+			return;
+
+		if( blockCnt > 0 ){
+			cameraFollow = false;
+			blockCnt--;
+			return;
+		}
+		// Declaration
+		POINT3D afterMovePos;
+		float arr_pos[3], arr_fDir[3], arr_uDir[3];
+
+		actor.MoveForward(moveStep, TRUE, TRUE, 0, TRUE);
+
+		actor.GetPosition(arr_pos);
+		afterMovePos.putArr(arr_pos);
+
+		if( pos == afterMovePos )
+			cameraFollow = false;
+		else
+			cameraFollow = true;
+
+		// update the data
+		actor.GetPosition(arr_pos);
+		actor.GetDirection(arr_fDir, arr_uDir);
+		pos.putArr(arr_pos);
+		fDir.putArr(arr_fDir);
+		uDir.putArr(arr_uDir);
+	}
+
+
+
+	void chageStatus(int statusToChange)	//改變狀態並記錄當下時間
+	{
+		statusCheck = true;
+		status=statusToChange;
+		statusTime = globalTime;
+		changeMove= true;
+	}
+
+
+	void Idle(PLAYER &mainChar)
+	{
+		if(statusCheck)
+		{
+			isMoving=false;
+			randomIdleTime= 2+(rand()%30)*0.1;
+			blockCnt=-1;
+		    actor.SetCurrentAction(NULL,0,idleID);	
+			statusCheck = false;			
+			//actor.SetCurrentAction(NULL,0,idleID);
+		}		
+		
+		if((mainChar.pos-pos).magnitude()<300)//若距離300有敵人 進入追蹤模式
+		{
+			chageStatus(enemy_surrondPlayer);
+			return;
+		}//進入包圍
+
+		if((globalTime - statusTime)>randomIdleTime)//idle 2~5秒則進攻城堡
+		{
+				chageStatus(enemy_attkCasle);							
+				return;
+		
+		}
+	}
+
+	
+
+	void GoForCastle(PLAYER &mainChar)
+	{			
+		if(statusCheck)
+		{
+			isMoving=true;
+			statusCheck = false;					
+			actor.SetCurrentAction(NULL,0,runID);					
+			blockCnt=20;
+		}
+			fDir=castleDirection;
+			fDir.normalize();
+			float _fDir[3], _uDir[3], _pos[3];
+			pos.getArr(_pos);
+			fDir.getArr(_fDir);
+			uDir.getArr(_uDir);			
+			actor.SetDirection(_fDir, _uDir);
+			
+
+		if((mainChar.pos-pos).magnitude()<300)//若距離300有敵人 進入追蹤模式
+		{
+			chageStatus(enemy_surrondPlayer);
+			return;
+		}//進入包圍
+		
+		if((globalTime - statusTime)>2) //前進2秒進入idle
+		{							
+			chageStatus(enemy_idle);
+		}
+	}
+
+
+	void SurroundPlayer(PLAYER &mainChar)
+	{
+		if(statusCheck)
+		{			
+			statusCheck = false;
+			isMoving=false;
+			actor.SetCurrentAction(NULL,0,idleID);
+			blockCnt=-1;
+		}			
+			VECTOR3D vec = (mainChar.pos - pos);
+
+			vec.normalize();
+			fDir.normalize();
+			
+			fDir=vec; 
+			float _fDir[3], _uDir[3], _pos[3];
+			pos.getArr(_pos);
+			fDir.getArr(_fDir);
+			uDir.getArr(_uDir);			
+			actor.SetDirection(_fDir, _uDir);
+
+		if((mainChar.pos-pos).magnitude() > 600)
+		{
+			chageStatus(enemy_attkCasle);
+			return;			
+		}	
+
+		if((mainChar.pos-pos).magnitude() > 200)
+		{
+			chageStatus(enemy_goForPlayer);
+			return;			
+		}
+
+	
+	}
+
+	void GoForPlayer(PLAYER &mainChar)
+	{
+		if(statusCheck)
+		{
+			isMoving=true;
+			blockCnt=20;
+			statusCheck = false;
+			actor.SetCurrentAction(NULL,0,runID);			
+		}		
+
+			VECTOR3D vec = (mainChar.pos - pos);
+			vec.normalize();
+			fDir.normalize();
+			
+			fDir=vec; 
+			float _fDir[3], _uDir[3], _pos[3];
+			pos.getArr(_pos);
+			fDir.getArr(_fDir);
+			uDir.getArr(_uDir);			
+			actor.SetDirection(_fDir, _uDir);
+
+
+		if((mainChar.pos-pos).magnitude() <= 200)	//距離抵達350 準備攻擊
+		{	
+			isMoving=false;			
+			actor.SetCurrentAction(NULL,0,idleID);
+			chageStatus(enemy_attkPlayer);
+			return;
+		}
+
+		
+		if((mainChar.pos-pos).magnitude() > 600) //距離太遠 ->直接攻城
+		{		
+			chageStatus(enemy_attkCasle);
+			return;
+		}
+			
+
+	}
+
+
+	void AttkPlayer(PLAYER &mainChar)
+	{
+
+		if(statusCheck)
+		{
+			isMoving=false;
+			blockCnt=-1;
+			statusCheck = false;
+			//actor.SetCurrentAction(NULL,0,idleID);		
+		}		
+			VECTOR3D vec = (mainChar.pos - pos);
+			vec.normalize();
+			fDir.normalize();
+			
+			fDir=vec; 
+			float _fDir[3], _uDir[3], _pos[3];
+			pos.getArr(_pos);
+			fDir.getArr(_fDir);
+			uDir.getArr(_uDir);			
+			actor.SetDirection(_fDir, _uDir);
+
+
+		if((mainChar.pos-pos).magnitude() > 600) //距離太遠 ->直接攻城
+		{		
+			chageStatus(enemy_attkCasle);
+			return;
+		}
+
+		if((mainChar.pos-pos).magnitude()>200) 
+		{			
+			chageStatus(enemy_surrondPlayer);
+			return;
+		}
+
+
+		if((globalTime - statusTime)>1) //停滯兩秒 20%機率發動攻擊
+		{			
+			if(rand()%10>5)
+			{
+				chageStatus(enemy_DoAtk);
+			}
+		}
+	
+	}
+
+	void Attk()
+	{
+		if(statusCheck)
+		{			
+			isMoving=false;
+			blockCnt=-1;
+			statusCheck = false;
+			actor.SetCurrentAction(NULL,0,tmpAtkID);		
+			AtkKey=rand()%2;
+			doAtk=true;
+		}	
+		
+
+		chageStatus(enemy_idle);
+	}
+
+	
+
+
+}ENEMY;
+
+typedef class NPC_R : public ENEMY{
 public:
 	// ACTIONid beAtkID0;
 public:
-	NPC_R(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
+	NPC_R(float posx = 0.0, float posy = 0.0, float posz = 0.0) : ENEMY(posx, posy, posz){
 		actorType = 1; //NPC_R
 		;
 	}
@@ -778,7 +1142,47 @@ public:
 	bool Play_preIdf(int skip){
 		return false;
 	}
-	bool AttackGoal(PLAYER &goal, int &type){
+		bool AttackGoal(PLAYER &goal, int &type){
+		if( !doAtk )
+			return false;
+
+		double _IDF_DST = 200, _IDF_ANG[2] = {-20, 20};
+
+		switch(type){
+		case 1:
+			_IDF_DST = 200;
+			_IDF_ANG[0] = -20;
+			_IDF_ANG[1] = 20;
+			type = 0;
+			break;
+		case 2:
+			_IDF_DST = 220;
+			_IDF_ANG[0] = -20;
+			_IDF_ANG[1] = 20;
+			type = 1;
+			break;
+		
+		default:
+			_IDF_DST = 200;
+			_IDF_ANG[0] = -20;
+			_IDF_ANG[1] = 20;
+			type = 0;
+			break;
+		}
+
+		VECTOR3D goalDst = goal.pos - pos;
+		goalDst.z = 0;
+
+		double getDst = fabs(goalDst.magnitude());
+
+		if( getDst < _IDF_DST ){
+			goalDst.normalize();
+			double getAngle = acos(goalDst.dot(fDir))*180.0/PI;
+			double theSign = (goalDst.dot(fDir) > 0) ? 1.0 : -1.0;
+
+			if( getAngle*theSign > _IDF_ANG[0] && getAngle*theSign < _IDF_ANG[1] )
+				return true;
+		}
 		return false;
 	}
 }NPC_R;
@@ -948,6 +1352,13 @@ BOOL isShowHelpUI = TRUE;
 void FyMain(int argc, char **argv){
 	// create a new world
 	BOOL4 beOK = FyStartFlyWin32("Homewrok03", 50, 30, _WIN_W, _WIN_H, FALSE);
+
+
+	castleDirection = VECTOR3D(0,1,0);
+	castleDirection.normalize();
+	globalTime = 0.0f;
+	test = 0.0f;
+	score =0;
 
 	// setup the data searching paths
 	FySetModelPath("Data\\NTU\\\\Scenes");
@@ -1170,8 +1581,47 @@ void GameAI(int skip){
 	mainChar.MoveChar(skip, followCam.pos);
 	npc01.MoveChar(skip, followCam.pos);
 	for( int i=0 ; i<(int)robbot.size() ; i++ ){
+		//robbot[i].DO();
 		robbot[i].MoveChar(skip, followCam.pos);
+		switch(robbot[i].status)
+		{
+		case enemy_idle :
+			robbot[i].Idle(mainChar);
+			break;
+		case enemy_attkCasle:
+			robbot[i].GoForCastle(mainChar);
+			break;
+		case enemy_attkPlayer :
+			robbot[i].AttkPlayer(mainChar);
+			break;
+		case enemy_goForPlayer :
+			robbot[i].GoForPlayer(mainChar);
+			break;
+		case enemy_surrondPlayer:
+			robbot[i].SurroundPlayer(mainChar);
+			break;
+		case enemy_DoAtk:
+			robbot[i].Attk();
+			//robbot[i].TurnToCastle(mainChar);
+			break;
+		case enemy_turnToPlayer:
+			//robbot[i].TurnToPlayer(mainChar);
+			break;
+
+		}
+		robbot[i].deadCheck();
+		robbot[i].arriveCheck();
+
+		
 	}
+	
+	if(score>10)
+	{
+		mainChar.Attr.HP=0;		
+		mainChar.GetHurt_H(skip);
+	}
+	
+
 
 	// Attack People
 	int getType;
@@ -1187,7 +1637,9 @@ void GameAI(int skip){
 		
 		
 	}
-	for( int i=0 ; i<(int)robbot.size() ; i++ ){
+
+	for( int i=0 ; i<(int)robbot.size() ; i++ )
+	{
 		if( mainChar.AttackGoal(robbot[i], getType) ){
 			if( getType == 0 ){			// Normal Attack
 				robbot[i].Attr.getHit(mainChar.Attr);
@@ -1198,7 +1650,31 @@ void GameAI(int skip){
 				robbot[i].GetHurt_H(skip);
 			}
 		}
+		
+
+
+		
+
+		if(robbot[i].doAtk)
+		{
+			int atkType =rand()%2;
+			if( robbot[i].AttackGoal(mainChar,atkType))
+			{
+				if( atkType == 0 ){			// Normal Attack
+					mainChar.Attr.getHit(robbot[i].Attr);
+					mainChar.GetHurt(skip);
+				}
+				else if( atkType == 1 ){	// Heavy Attack
+					mainChar.Attr.getHit_H(robbot[i].Attr);
+					mainChar.GetHurt_H(skip);
+				}
+			}
+	
+			robbot[i].doAtk=false;
+		}
 	}
+
+
 
 	if( mainChar.cameraFollow )
 		followCam.moveCamera_follow(mainChar);
@@ -1256,6 +1732,7 @@ void RenderIt(int skip){
 	
 	char posS[256], fDirS[256], uDirS[256], temp[256];
 	char charPos[256], charDir[256];
+	char testS[256];
 	followCam.camera.GetPosition(pos);
 	followCam.camera.GetDirection(fDir, uDir);
 	sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
@@ -1267,6 +1744,7 @@ void RenderIt(int skip){
 	sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
 	sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
 	sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
+	 sprintf(testS,"test Value: %d\n", score);
 	
 	text.Write(posS, 20, 35, 255, 255, 0);
 	text.Write(fDirS, 20, 50, 255, 255, 0);
