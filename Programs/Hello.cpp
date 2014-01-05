@@ -76,6 +76,11 @@ bool turingL;
 bool changing;
 float beforeMovingCouter;
 
+// For Wave Control
+bool   _IS_START_GAME_  = false;
+double _NEXT_WAVE_TIME_ = 10;
+int	   _NOW_WAVE_CNT_	= 0;
+
 // hotkey callbacks
 void QuitGame(BYTE, BOOL4);
 void Movement(BYTE, BOOL4);
@@ -140,6 +145,11 @@ public:
 	double Org_HP;
 
 	ATTRIBUTE(double getHP=100, double getATK=50, double getATK_H=70, double getDEF=30, double getSPD = 1){
+		initial(getHP, getATK, getATK_H, getDEF, getSPD);
+	}
+	~ATTRIBUTE(){;}
+
+	void initial(double getHP=100, double getATK=50, double getATK_H=70, double getDEF=30, double getSPD = 1){
 		Org_HP= getHP;
 		HP    = getHP;
 		ATK   = getATK;
@@ -147,8 +157,6 @@ public:
 		DEF   = getDEF;
 		SPEED = getSPD;
 	}
-	~ATTRIBUTE(){;}
-
 	inline double getHit(ATTRIBUTE &attacker){
 		// Decrease HP, return Attack Number
 		double tmp = attacker.ATK - DEF;
@@ -585,6 +593,14 @@ public:
 		actorType = 0; //MAINCHAR
 	}
 	~MAINCHAR(){;}
+
+	void restartChar(){
+		Attr.initial();
+		// set the character to idle action
+		curPoseID = idleID;
+		actor.SetCurrentAction(NULL, 0, curPoseID);
+		actor.Play(START, 0.0f, FALSE, TRUE);
+	}
 
 	void loadPlayerAction(){
 		actorType = 0;
@@ -1471,7 +1487,7 @@ void FyMain(int argc, char **argv){
 	FySetTexturePath("Data\\NTU\\\\Characters");
 	FySetCharacterPath("Data\\NTU\\\\Characters");
 
-	mainChar.initial_pos(3500.0f, -3000.0f, 285.0f);
+	mainChar.initial_pos(3500.0f, -3000.0f, 5.0f);
 	mainChar.loadPlayer(scene, "Lyubu");
 	mainChar.load_bloodbar(scene);
 
@@ -1523,6 +1539,7 @@ void FyMain(int argc, char **argv){
 
 	FyDefineHotKey(FY_F2, cursorCtr, FALSE);
 	FyDefineHotKey(FY_P, CallNewWave, FALSE);
+	FyDefineHotKey(FY_RETURN, CallNewWave, FALSE);
 
 	// define some mouse functions
 	FyBindMouseFunction(LEFT_MOUSE, Attack_mouse_L, NULL, NULL, NULL);
@@ -1748,7 +1765,7 @@ void RenderIt(int skip){
 	
 	//
 	char HP[256], bkcnt[256];
-	sprintf(HP, "HP: %8.3f %d TIME[%lf]", npc01.Attr.HP, robbot[0].status, globalTime);
+	sprintf(HP, "HP: %8.3f TIME[%lf]", npc01.Attr.HP, globalTime);
 	sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
 	//
 	
@@ -1784,9 +1801,27 @@ void RenderIt(int skip){
 	FySwapBuffers();
 }
 
+void GlobalTimer(int skip){
+	static double waveRestTime = 10;
+	if( !_IS_START_GAME_ )
+		return;
 
-void GlobalTimer(int skip)
-{
+	if( _NOW_WAVE_CNT_ == 2 ){
+		waveRestTime = 7;
+	}
+	else if( _NOW_WAVE_CNT_ == 4 ){
+		waveRestTime = 5;
+	}
+	else if( _NOW_WAVE_CNT_ == 7 ){
+		waveRestTime = 3;
+	}
+
+	if( (int)globalTime*10 == (int)_NEXT_WAVE_TIME_*10 ){
+		NewWave(5,1);
+		_NOW_WAVE_CNT_ ++;
+		_NEXT_WAVE_TIME_ += waveRestTime;
+	}
+
 	globalTime +=0.1;
 }
 
@@ -1855,6 +1890,21 @@ void CallNewWave(BYTE code,BOOL4 value)
 	{
 		NewWave(5,1);
 	}
+	if( code == FY_RETURN && !_IS_START_GAME_ ){
+		_IS_START_GAME_ = true;
+	}
+	if( code == FY_RETURN && mainChar.Attr.isDie() ){
+		_NEXT_WAVE_TIME_ = 10;
+		_NOW_WAVE_CNT_ = 0;
+		for( int i=0 ; i<robbot.size() ; i++ ){
+			robbot[i].actor.Show(FALSE, FALSE, FALSE, FALSE);
+		}
+		robbot.clear();
+		mainChar.restartChar();
+		NewWave(1, 0);
+		globalTime = 0.0;
+		_IS_START_GAME_ = false;
+	}
 }
 
 
@@ -1869,8 +1919,6 @@ void NewWave(int fishNum,int bossNum)
 	}		
 	//robbot[i].actor.TurnRight(180);
 }
-
-
 
 void QuitGame(BYTE code, BOOL4 value)
 {
