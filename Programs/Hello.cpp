@@ -1520,6 +1520,7 @@ void FyMain(int argc, char **argv){
 	FyDefineHotKey(FY_4, Attack, FALSE);
 
 	FyDefineHotKey(FY_F2, cursorCtr, FALSE);
+	FyDefineHotKey(FY_P, CallNewWave, FALSE);
 
 	// define some mouse functions
 	FyBindMouseFunction(LEFT_MOUSE, Attack_mouse_L, NULL, NULL, NULL);
