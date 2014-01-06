@@ -33,6 +33,7 @@ SCENEid sID_2D;                 // the 2D scene
 OBJECTid cID, tID;              // the main camera and the terrain for terrain following
 CHARACTERid actorID;            // the major character
 FnScene scene, scene_2D;
+SCENEid nextWaveBorad, gameOverBorad;
 
 ROOMid terrainRoomID	= FAILED_ID;
 TEXTid textID			= FAILED_ID;
@@ -1442,6 +1443,32 @@ void FyMain(int argc, char **argv){
 	ui_keyHint.SetImage("keyHint01.png", 0, NULL, 0, NULL, NULL, MANAGED_MEMORY, FALSE, FALSE);
 	ui_keyHint.SetPosition(0, 20, 0);
 
+	// Load NextWave Borad
+	nextWaveBorad = FyCreateScene(2);
+	FnScene swb;
+	swb.Object(nextWaveBorad);
+	swb.SetSpriteWorldSize(_WIN_W, _WIN_H);
+
+	OBJECTid wbID = swb.CreateObject(SPRITE);
+	FnSprite wb_sp;
+	wb_sp.Object(wbID);
+	wb_sp.SetSize(324, 324);
+	wb_sp.SetImage("nextWave.png", 0, NULL, 0, NULL, NULL, MANAGED_MEMORY, FALSE, FALSE);
+	wb_sp.SetPosition(350, 400, 0);
+
+	// Load GameOver Borad
+	gameOverBorad = FyCreateScene(3);
+	FnScene sgo;
+	sgo.Object(gameOverBorad);
+	sgo.SetSpriteWorldSize(_WIN_W, _WIN_H);
+
+	OBJECTid goID = sgo.CreateObject(SPRITE);
+	FnSprite go_sp;
+	go_sp.Object(goID);
+	go_sp.SetSize(324, 324);
+	go_sp.SetImage("gameOver.png", 0, NULL, 0, NULL, NULL, MANAGED_MEMORY, FALSE, FALSE);
+	go_sp.SetPosition(350, 400, 0);
+
 	// create a 3D scene
 	sID = FyCreateScene(10);
 	scene.ID(sID);
@@ -1534,7 +1561,7 @@ void FyMain(int argc, char **argv){
 	lgt.SetIntensity(1.0f);
 
 	// create a text object
-	textID = FyCreateText("Trebuchet MS", 18, FALSE, FALSE);
+	textID = FyCreateText("Trebuchet MS", 24, FALSE, FALSE);
 	
 	// set Hotkeys
 	FyDefineHotKey(FY_ESCAPE, QuitGame, FALSE);  // escape for quiting the game
@@ -1679,6 +1706,7 @@ void GameAI(int skip){
 	{
 		mainChar.Attr.HP=0;		
 		mainChar.GetHurt_H(skip);
+		return;
 	}
 	
 
@@ -1739,6 +1767,9 @@ void GameAI(int skip){
 		mainChar.doAtk = false;
 }
 
+#define _SHOW_DEBUG_WORD_ false
+bool showNextWaveBoard = false;
+
 void RenderIt(int skip){
 	FnViewport vp;
 	
@@ -1749,6 +1780,14 @@ void RenderIt(int skip){
 	if( isShowHelpUI )
 		vp.RenderSprites(sID_2D, FALSE, TRUE);
 	
+	if( mainChar.isGameOver || mainChar.Attr.isDie() ){
+		vp.RenderSprites(gameOverBorad, FALSE, TRUE);
+	}
+	else{
+		if( showNextWaveBoard )
+			vp.RenderSprites(nextWaveBorad, FALSE, TRUE);
+	}
+
 	// get camera's data
 	float pos[3], fDir[3], uDir[3];
 	followCam.camera.GetPosition(pos);
@@ -1775,46 +1814,67 @@ void RenderIt(int skip){
 	FnText text;
 	text.ID(textID);
 	
-	text.Begin(vID);
-	text.Write(string, 20, 20, 255, 0, 0);
-	
-	//
-	char HP[256], bkcnt[256];
-	sprintf(HP, "HP: %8.3f TIME[%lf]", npc01.Attr.HP, globalTime);
-	sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
-	//
-	
-	char posS[256], fDirS[256], uDirS[256], temp[256];
-	char charPos[256], charDir[256];
-	char testS[256];
-	followCam.camera.GetPosition(pos);
-	followCam.camera.GetDirection(fDir, uDir);
-	sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
-	sprintf(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
-	sprintf(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
-	
-	mainChar.actor.GetPosition(pos);
-	mainChar.actor.GetDirection(fDir, uDir);
-	sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
-	sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
-	sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
-	sprintf(testS,"test Value: %d\n", score);
-	
-	text.Write(posS, 20, 35, 255, 255, 0);
-	text.Write(fDirS, 20, 50, 255, 255, 0);
-	text.Write(uDirS, 20, 65, 255, 255, 0);
-	text.Write(temp, 20, 80, 255, 255, 0);
-	text.Write(charPos, 20, 95, 255, 255, 0);
-	text.Write(charDir, 20, 110, 255, 255, 0);
-	
-	text.Write(HP, 20, 130, 255, 255, 0);
-	text.Write(testS, 20, 150, 255, 255, 0);
-	
-	text.End();
+	if( _SHOW_DEBUG_WORD_ ){
+		text.Begin(vID);
+		text.Write(string, 20, 20, 255, 0, 0);
+
+		//
+		char HP[256], bkcnt[256];
+		sprintf(HP, "HP: %8.3f TIME[%lf]", npc01.Attr.HP, globalTime);
+		sprintf(bkcnt, "bkcnt: %d ", mainChar.blockCnt);
+		//
+
+		char posS[256], fDirS[256], uDirS[256], temp[256];
+		char charPos[256], charDir[256];
+		char testS[256];
+		followCam.camera.GetPosition(pos);
+		followCam.camera.GetDirection(fDir, uDir);
+		sprintf(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
+		sprintf(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
+		sprintf(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
+
+		mainChar.actor.GetPosition(pos);
+		mainChar.actor.GetDirection(fDir, uDir);
+		sprintf(temp, "rot[0 1]: %f %f\n", rot[0], rot[1]);
+		sprintf(charPos, "Char Pos: %f %f %f\n", pos[0], pos[1], pos[2]);
+		sprintf(charDir, "Char fDir: %f %f %f\n", fDir[0], fDir[1], fDir[2]);
+		sprintf(testS,"test Value: %d\n", 10 - score);
+
+		text.Write(posS, 20, 35, 255, 255, 0);
+		text.Write(fDirS, 20, 50, 255, 255, 0);
+		text.Write(uDirS, 20, 65, 255, 255, 0);
+		text.Write(temp, 20, 80, 255, 255, 0);
+		text.Write(charPos, 20, 95, 255, 255, 0);
+		text.Write(charDir, 20, 110, 255, 255, 0);
+
+		text.Write(HP, 20, 130, 255, 255, 0);
+		text.Write(testS, 20, 150, 255, 255, 0);
+
+		text.End();
+	}
+	else{
+		text.Begin(vID);
+		// text.Write(string, 20, 20, 255, 0, 0);
+
+		int chanceCnt = (10 - score)<0 ? 0 : 10 - score;
+		char waveCnt[256], nowTime[256], chanceTime[256];
+		sprintf(nowTime, "Time:    %.2lf", globalTime);
+		sprintf(waveCnt, "Wave:    %d ", _NOW_WAVE_CNT_);
+		sprintf(chanceTime, "Left Chance: %d ", chanceCnt);
+
+		text.Write(nowTime, 20, 35, 255, 0, 0);
+		text.Write(waveCnt, 20, 50, 255, 255, 0);
+		text.Write(chanceTime, 20, 65, 255, 255, 0);
+
+		text.End();
+	}
 	
 	// swap buffer
 	FySwapBuffers();
 }
+
+#define _NW_SHOW_TIME_ 2
+double nextWaveBoradCnt = _NEXT_WAVE_TIME_ + _NW_SHOW_TIME_;
 
 void GlobalTimer(int skip){
 	static double waveRestTime = 10;
@@ -1825,16 +1885,22 @@ void GlobalTimer(int skip){
 		waveRestTime = 7;
 	}
 	else if( _NOW_WAVE_CNT_ == 4 ){
-		waveRestTime = 5;
+		waveRestTime = 6;
 	}
 	else if( _NOW_WAVE_CNT_ == 7 ){
-		waveRestTime = 3;
+		waveRestTime = 4;
 	}
 
 	if( (int)globalTime*10 == (int)_NEXT_WAVE_TIME_*10 ){
 		NewWave(5,1);
 		_NOW_WAVE_CNT_ ++;
 		_NEXT_WAVE_TIME_ += waveRestTime;
+		showNextWaveBoard = true;
+	}
+
+	if( (int)globalTime*10 == (int)nextWaveBoradCnt*10 ){
+		showNextWaveBoard = false;
+		nextWaveBoradCnt = _NEXT_WAVE_TIME_ + _NW_SHOW_TIME_;
 	}
 
 	globalTime +=0.1;
