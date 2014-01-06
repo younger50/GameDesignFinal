@@ -591,11 +591,12 @@ public:
 public:
 	MAINCHAR(float posx = 0.0, float posy = 0.0, float posz = 0.0) : PLAYER(posx, posy, posz){
 		actorType = 0; //MAINCHAR
+		Attr.initial(300, 60, 80, 40);
 	}
 	~MAINCHAR(){;}
 
 	void restartChar(){
-		Attr.initial();
+		Attr.initial(300, 60, 80, 40);
 		// set the character to idle action
 		curPoseID = idleID;
 		actor.SetCurrentAction(NULL, 0, curPoseID);
@@ -711,7 +712,7 @@ public:
 			tmp = tmpAtkID;
 			break;
 		}
-
+ 
 		ACTIONid getSysAction = actor.GetCurrentAction(NULL);
 		if( getSysAction==tmp ){
 			switch(actorType)
@@ -732,6 +733,10 @@ public:
 				curPoseID = idleID;
 				blockCnt  = -1;
 				actor.SetCurrentAction(NULL, 0, idleID, 0.0);
+				if( nowAngle != 0 ){
+					actor.TurnRight((360-int(nowAngle))%360);
+					nowAngle  = 0;
+				}
 			}
 		}
 
@@ -830,9 +835,19 @@ public:
 
 		actor.Play(LOOP, (float) skip, FALSE, TRUE);
 
+		if( Attr.isDie() && blockCnt>=0 ){
+			actor.Play(ONCE, (float) skip, FALSE, TRUE);
+			if( blockCnt > 0 ){
+				blockCnt--;
+				return;
+			}
+			actor.Show(FALSE, FALSE, FALSE, FALSE);
+			blockCnt = -1;
+		}
+
 		if( Attr.isDie() ){
 			actor.Play(ONCE, (float) skip, FALSE, TRUE);
-			blockCnt = -1;
+			blockCnt = 60;
 			return;
 		}
 
@@ -1455,32 +1470,32 @@ void FyMain(int argc, char **argv){
 	room.AddObject(tID);
 
 	// load audio
-	// audio_Atk_main.ID(FyCreateAudio());
-	// audio_Atk_main.Load("01_pose07");
-	// audio_die_main.ID(FyCreateAudio());
-	// audio_die_main.Load("02_pose25");
-	// audio_beAtkedMain_main.ID(FyCreateAudio());
-	// audio_beAtkedMain_main.Load("02_pose10");
-	// audio_beAtkID0_main.ID(FyCreateAudio());
-	// audio_beAtkID0_main.Load("01_pose12");
-	// 
-	// audio_Atk_NPC_R.ID(FyCreateAudio());
-	// audio_Atk_NPC_R.Load("02_pose22");
-	// audio_die_NPC_R.ID(FyCreateAudio());
-	// audio_die_NPC_R.Load("03_pose25");
-	// audio_beAtkedMain_NPC_R.ID(FyCreateAudio());
-	// audio_beAtkedMain_NPC_R.Load("03_pose22");
-	// audio_beAtkID0_NPC_R.ID(FyCreateAudio());
-	// audio_beAtkID0_NPC_R.Load("03_pose22");
-	// 
-	// audio_Atk_DONZO.ID(FyCreateAudio());
-	// audio_Atk_DONZO.Load("02_pose07");
-	// audio_die_DONZO.ID(FyCreateAudio());
-	// audio_die_DONZO.Load("02_pose25");
-	// audio_beAtkedMain_DONZO.ID(FyCreateAudio());
-	// audio_beAtkedMain_DONZO.Load("02_pose10");
-	// audio_beAtkID0_DONZO.ID(FyCreateAudio());
-	// audio_beAtkID0_DONZO.Load("02_pose10");
+	audio_Atk_main.ID(FyCreateAudio());
+	audio_Atk_main.Load("01_pose07");
+	audio_die_main.ID(FyCreateAudio());
+	audio_die_main.Load("02_pose25");
+	audio_beAtkedMain_main.ID(FyCreateAudio());
+	audio_beAtkedMain_main.Load("02_pose10");
+	audio_beAtkID0_main.ID(FyCreateAudio());
+	audio_beAtkID0_main.Load("01_pose12");
+	
+	audio_Atk_NPC_R.ID(FyCreateAudio());
+	audio_Atk_NPC_R.Load("02_pose22");
+	audio_die_NPC_R.ID(FyCreateAudio());
+	audio_die_NPC_R.Load("03_pose25");
+	audio_beAtkedMain_NPC_R.ID(FyCreateAudio());
+	audio_beAtkedMain_NPC_R.Load("03_pose22");
+	audio_beAtkID0_NPC_R.ID(FyCreateAudio());
+	audio_beAtkID0_NPC_R.Load("03_pose22");
+	
+	audio_Atk_DONZO.ID(FyCreateAudio());
+	audio_Atk_DONZO.Load("02_pose07");
+	audio_die_DONZO.ID(FyCreateAudio());
+	audio_die_DONZO.Load("02_pose25");
+	audio_beAtkedMain_DONZO.ID(FyCreateAudio());
+	audio_beAtkedMain_DONZO.Load("02_pose10");
+	audio_beAtkID0_DONZO.ID(FyCreateAudio());
+	audio_beAtkID0_DONZO.Load("02_pose10");
 
 	// load the character
 	FySetModelPath("Data\\NTU\\\\Characters");
@@ -1491,9 +1506,9 @@ void FyMain(int argc, char **argv){
 	mainChar.loadPlayer(scene, "Lyubu");
 	mainChar.load_bloodbar(scene);
 
-	npc01.initial_pos(4050.0f, -3470.0f, 285.0f);
-	npc01.loadPlayer(scene, "Donzo");
-	npc01.actor.TurnRight(180);
+	// npc01.initial_pos(4050.0f, -3470.0f, 285.0f);
+	// npc01.loadPlayer(scene, "Donzo");
+	// npc01.actor.TurnRight(180);
 
 	// for( int i=0 ; i<(int)robbot.size() ; i++ ){
 	// 	robbot[i].initial_pos(4050.0f+rand()%400-200, -3670.0f+rand()%400-200, 285.0f);
@@ -1599,16 +1614,16 @@ void GameAI(int skip){
 	ShowCursor(isShowCursor);
 	
 	if (mmID != FAILED_ID) {
-      FnMedia md;
-      md.Object(mmID);
-      if (md.GetState() == MEDIA_STOPPED) {
-         // after playing, delete the media object
-         FyDeleteMediaPlayer(mmID);
-         mmID = FAILED_ID;
-      }
-      else {
-         //return;
-      }
+		FnMedia md;
+		md.Object(mmID);
+		if (md.GetState() == MEDIA_STOPPED) {
+			// after playing, delete the media object
+			FyDeleteMediaPlayer(mmID);
+			mmID = FAILED_ID;
+		}
+		else {
+			//return;
+		}
 	}
 
 	FnObject terrain;
@@ -1617,14 +1632,14 @@ void GameAI(int skip){
 	
 	// General Play Action Control
 	mainChar.Play(skip);
-	npc01.Play(skip);
+	// npc01.Play(skip);
 	for( int i=0 ; i<(int)robbot.size() ; i++ ){
 		robbot[i].Play(skip);
 	}
 
 	// Moving Posing Control
 	mainChar.MoveChar(skip, followCam.pos);
-	npc01.MoveChar(skip, followCam.pos);
+	// npc01.MoveChar(skip, followCam.pos);
 	for( int i=0 ; i<(int)robbot.size() ; i++ ){
 		//robbot[i].DO();
 		robbot[i].MoveChar(skip, followCam.pos);
