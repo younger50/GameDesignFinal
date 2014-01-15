@@ -1,7 +1,7 @@
 /*---------------------------------------------------------
-  HDR Shader integerated with Depth-of-field & Motion Blur
+  Depth-of-field Shader
   
-  (C)2008, Chaun-Chang Wang, All Rights Reserved
+  (C)2008-2013, Chaun-Chang Wang, All Rights Reserved
  ----------------------------------------------------------*/
 // for depth-of-field
 float inside = 50.0f;       // DOF distance
@@ -10,15 +10,43 @@ float dist = 300.0f;
 float2 pixelSizeHigh;
 
 // contains poisson-distributed positions on the unit circle
-float2 poisson[9] = { float2(  0.0,   0.0),
-                      float2(  0.67,  0.0),
-                      float2( -0.67,  0.0),
-                      float2(  0.0,  -0.67),
-                      float2(  0.67, -0.67),
-                      float2( -0.67, -0.67),
-                      float2(  0.0,   0.67),
-                      float2(  0.67,  0.67),
-                      float2( -0.67,  0.67)};
+float2 poisson9[9] = { float2(  0.0,   0.0),
+                       float2(  0.67,  0.0),
+                       float2( -0.67,  0.0),
+                       float2(  0.0,  -0.67),
+                       float2(  0.67, -0.67),
+                       float2( -0.67, -0.67),
+                       float2(  0.0,   0.67),
+                       float2(  0.67,  0.67),
+                       float2( -0.67,  0.67)};
+
+float2 poisson16[16] = { float2(  0.6,  -0.6),
+                         float2(  0.2,  -0.6),
+                        float2( -0.2,  -0.6),
+                        float2( -0.6,  -0.6),
+                        float2(  0.6,  -0.2),
+                        float2(  0.2,  -0.2),
+                        float2( -0.2,  -0.2),
+                        float2( -0.6,  -0.2),
+                        float2(  0.6,   0.2),
+                        float2(  0.2,   0.2),
+                        float2( -0.2,   0.2),
+                        float2( -0.6,   0.2),
+                        float2(  0.6,   0.6),
+                        float2(  0.2,   0.6),
+                        float2( -0.2,   0.6),
+                        float2( -0.6,   0.6)};
+
+//float2 poisson9[9] = { float2(  0.0,   -0.167),
+//                       float2( -0.25,   0.167),
+//                       float2(  0.25,  -0.389),
+//                       float2( -0.375, -0.056),
+//                       float2(  0.125,  0.278),
+//                       float2( -0.125, -0.278),
+//                       float2(  0.375,  0.056),
+//                       float2( -0.438,  0.389),
+//                       float2(  0.063, -0.463)};
+
 
 float2 vMaxCoC = float2(4.0f, 8.0f);
 
@@ -77,26 +105,25 @@ VS_OUTPUTScreen VSDoDOF(float4 pos : POSITION, float2 tex : TEXCOORD0)
 /*------------------------------------
   pixel shader for final tone mapping
  -------------------------------------*/
-float4 PSDoDOF(float2 tex : TEXCOORD0) : COLOR0
+float4 PSDoDOF16(float2 tex : TEXCOORD0) : COLOR0
 {      
    // convert depth into blur widths in pixels
    float centerDepth = tex2D(depthMapSampler, tex).x;
    float discRadius = abs(centerDepth*vMaxCoC.y - vMaxCoC.x);
       
    float4 color;
-   if (discRadius <= 1) {
+   if (discRadius <= 1.5) {
       color = tex2D(fullResMapSampler, tex);
    }
    else {
       float4 cOut = 0.0f;
       float depT = 0.0f;
       float2 range = pixelSizeHigh*discRadius;
-      for (int t = 0; t < 9; t++) {
+      for (int t = 0; t < 16; t++) {
          // fetch high-res tap
-         float2 coordHigh = tex + (range*poisson[t]);
+         float2 coordHigh = tex + (range*poisson16[t]);
          float4 tapHigh = tex2D(fullResMapSampler, coordHigh);
-         if (tapHigh.a == 0)
-         {
+         if (tapHigh.a == 0) {
             cOut = tex2D(fullResMapSampler, tex);
             depT = 1;
             break;
@@ -116,6 +143,52 @@ float4 PSDoDOF(float2 tex : TEXCOORD0) : COLOR0
       color = cOut/depT;
    }
       
+   // return result
+   return color;
+}
+
+
+/*------------------------------------
+  pixel shader for final tone mapping
+ -------------------------------------*/
+float4 PSDoDOF9(float2 tex : TEXCOORD0) : COLOR0
+{      
+   // convert depth into blur widths in pixels
+   float centerDepth = tex2D(depthMapSampler, tex).x;
+   float discRadius = abs(centerDepth*vMaxCoC.y - vMaxCoC.x);
+      
+   float4 color;
+   if (discRadius <= 1.5) {
+      color = tex2D(fullResMapSampler, tex);
+   }
+   else {
+      float4 cOut = 0.0f;
+      float depT = 0.0f;
+      float2 range = pixelSizeHigh*discRadius;
+      for (int t = 0; t < 9; t++) {
+         // fetch high-res tap
+         float2 coordHigh = tex + (range*poisson9[t]);
+         float4 tapHigh = tex2D(fullResMapSampler, coordHigh);
+         if (tapHigh.a == 0) {
+            cOut = tex2D(fullResMapSampler, tex);
+            depT = 1;
+            break;
+         }
+         
+         // fetch the depth on tap
+         float dep = tex2D(depthMapSampler, coordHigh).x;
+
+         // apply leaking reduction: lower weight for taps that are
+         // closer than the center tap and in focus
+         dep = (dep >= centerDepth) ? 1.0 : abs(dep*2.0 - 1.0);
+
+         // accumulate
+         cOut += tapHigh*dep;
+         depT += dep;
+      }
+      color = cOut/depT;
+   }
+         
    // return result
    return color;
 }
@@ -145,7 +218,7 @@ VS_OUTPUT_Depth VSGenDepth(float4 pos : POSITION)
    p = mul(pos, mWV);
    
    // depth value - TheFly's z is negative in view space when in front of the camera
-   vsOut.dep = -p.z;
+   vsOut.dep = abs(p.z);
    return vsOut;
 }
 
@@ -160,11 +233,13 @@ float4 PSGenDepth(float depth : TEXCOORD0) : COLOR
       // scale depth value between near blur distance and focal
       // distance to [-1, 0] range
       f = (depth - dist)/(dist - inside);
+      if (f < -1.0) f = -1.0;
    }
    else {
       // scale depth value between focal distance and far blur
       // distance to [0, 1] range
       f = (depth - dist)/(outside - dist);
+      if (f > 1.0) f = 1.0;
    }
    
    float depData = f*0.5f + 0.5f;
@@ -173,12 +248,21 @@ float4 PSGenDepth(float depth : TEXCOORD0) : COLOR
 
 
 // all techniques
-technique DoDOF
+technique DoDOF16
 {
    pass P0
    {
       VertexShader = compile vs_3_0 VSDoDOF();
-      PixelShader  = compile ps_3_0 PSDoDOF();
+      PixelShader  = compile ps_3_0 PSDoDOF16();
+   }
+}
+
+technique DoDOF9
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 VSDoDOF();
+      PixelShader  = compile ps_3_0 PSDoDOF9();
    }
 }
 

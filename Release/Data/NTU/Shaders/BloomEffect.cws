@@ -1,0 +1,18 @@
+# Bloom Effect Shader Description File
+# C.Wang 0509, 2006
+#
+
+Effect BloomEffect.fx
+
+VertexType position Texture 1 2
+
+Technique 3
+   0 ScaleBuffer 1 renderMap 0 0
+   1 Bloom 1 renderMap 0 0
+   2 BlendBuffer 2 fullResMap 0 0 renderMap 0 1
+   
+Constant 4
+   0 E Material Data 0 exposureLevel
+   1 E Material Data 1 pixelSize 2
+   2 E Material Data 3 fIteration
+   3 E Material Data 4 weight

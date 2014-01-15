@@ -1,0 +1,28 @@
+# The HDR Shader Effects
+# Version 2.0
+#
+# Created by C.Wang 0605, 2009
+#
+
+# the Effect
+Effect HDR2Effect.fx
+
+# vertex type
+VertexType position Texture 1 2
+
+# techniques
+Technique 4
+   0 Exposure    1 fullResMap 0 0
+   1 ScaleBuffer 1 bloomMap   0 0
+   2 Bloom       1 bloomMap   0 0
+   3 Tonemap     2 fullResMap 0 0 bloomMap 0 1
+
+# effect constants   
+Constant 7
+   0 E Material Data  0       pixelSize    2  ByTech 3 0 1 2
+   1 E Material Data  2       exposureLevel   ByTech 1 0
+   2 E Material Data  1       weight          ByTech 1 3
+   3 E Material Data  2       w2              ByTech 1 3
+   4 E Material bData 0       beVignette      ByTech 1 3
+   5 E Material Data  2       fIteration      ByTech 1 2
+   6 E Material Data  2       blurThreadold   ByTech 1 1

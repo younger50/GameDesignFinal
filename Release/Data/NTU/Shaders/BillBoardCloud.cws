@@ -1,0 +1,19 @@
+# Billboard Cloud Shader Description File
+# C.Wang 0831, 2011
+#
+
+Effect BillboardCloud.fx
+
+Technique 2
+   0 hBillboardCloud  2 colorMap 0 0 alphaMap 0 1
+   1 sBillboardCloud  3 colorMap 0 0 distanceMap x 1 alphaMap 0 2
+   
+Constant 8
+   0 E Matrix View mView
+   1 E Matrix Projection mProjection
+   2 E BeTexture 0 beMap0  
+   3 E BeTexture 1 beAlpha0  
+   4 E BeTexture 2 beAlpha1
+   5 E Camera Near current nearPlane
+   6 E Camera Far current farPlane
+   7 E Material bData 0 beAlpha

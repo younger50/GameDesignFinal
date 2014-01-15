@@ -1,0 +1,21 @@
+# CW3 model file, designed by Chuan-Chang Wang
+# Created : 0616, 2004
+#
+
+Model v 1
+
+VertexType Position Texture 1 2
+
+RenderOption VIEWING_CHECK FALSE
+
+Material 1
+   diffuse 1.0 1.0 1.0
+
+Vertex 1 4
+ -1.0 -1.0 0.1 0.0 0.0
+  1.0 -1.0 0.1 1.0 0.0
+  1.0  1.0 0.1 1.0 1.0
+ -1.0  1.0 0.1 0.0 1.0
+
+Polygon 1
+   4 0 0 1 2 3

@@ -25,7 +25,9 @@ using namespace std;
 int _WIN_W = 1024;				// window width
 int _WIN_H = 768;				// window height
 
-
+GAMEFX_SYSTEMid gfxid;
+FnGameFXSystem fx;
+FnGameFXSystem fx_arr[8];
 
 VIEWPORTid vID;                 // the major viewport
 SCENEid sID;                    // the 3D scene
@@ -1422,6 +1424,7 @@ void FyMain(int argc, char **argv){
 	// FySetTexturePath("Data\\Textures");
 	FySetScenePath("Data\\NTU\\\\Scenes");
 	FySetShaderPath("Data\\NTU\\\\Shaders");
+	FySetGameFXPath("Data\\NTU\\\\Shaders");
 	FySetAudioPath("Data\\NTU\\\\Audio");
 	
 	FyBeginMedia("Data\\NTU\\\\Media", 2);
@@ -1524,6 +1527,31 @@ void FyMain(int argc, char **argv){
 	audio_beAtkID0_DONZO.ID(FyCreateAudio());
 	audio_beAtkID0_DONZO.Load("02_pose10");
 
+	// create line
+	OBJECTid baseID1;
+	OBJECTid bbID = scene.CreateObject(OBJECT);
+	FnObject bb(bbID);
+
+	float pos1[6];
+	pos1[0]= 3500.0f-300.0f;
+	pos1[1]= -3000.0f;
+	pos1[2]= 5.0f;
+	pos1[3]= 3500.0f+300.0f;
+	pos1[4]= -3000.0f;
+	pos1[5]= 5.0f;
+
+	GEOMETRYid GatLine = bb.Lines(LINE_SEGMENTS,NULL,pos1,2);
+
+
+	pos1[0]= 3500.0f-300.0f;
+	pos1[1]= -3000.0f;
+	pos1[2]= 5.0f+5.0f;
+	pos1[3]= 3500.0f+300.0f;
+	pos1[4]= -3000.0f;
+	pos1[5]= 5.0f+5.0f;
+
+	GEOMETRYid GatLine1 = bb.Lines(LINE_SEGMENTS,NULL,pos1,2);
+
 	// load the character
 	FySetModelPath("Data\\NTU\\\\Characters");
 	FySetTexturePath("Data\\NTU\\\\Characters");
@@ -1559,6 +1587,21 @@ void FyMain(int argc, char **argv){
 	lgt.Translate(70.0f, -70.0f, 70.0f, REPLACE);
 	lgt.SetColor(1.0f, 1.0f, 1.0f);
 	lgt.SetIntensity(1.0f);
+
+	gfxid = scene.CreateGameFXSystem();
+	fx.ID(gfxid);
+	BOOL4 fxb = fx.Load("weapon.cwf",true,NULL,0);
+
+	//load FX
+	for( int i=0 ; i<8 ; i++ ){
+		char fileName[255];
+
+		GAMEFX_SYSTEMid gfxidTmp = scene.CreateGameFXSystem();
+		fx_arr[i].ID(gfxidTmp);
+		sprintf(fileName, "fire%d.cwf", i+1);
+		BOOL4 fxb = fx_arr[i].Load(fileName,true,NULL,0);
+		fx_arr[i].Reset();
+	}
 
 	// create a text object
 	textID = FyCreateText("Trebuchet MS", 24, FALSE, FALSE);
@@ -1636,6 +1679,8 @@ void trackCursorPos(void){
 	preMousePos.y = mousePos.y;
 }
 
+int fxArrCnt = 0;
+
 void GameAI(int skip){
 	// Hide the Cursor
 	ShowCursor(isShowCursor);
@@ -1656,13 +1701,15 @@ void GameAI(int skip){
 	FnObject terrain;
 	
 	terrain.ID(tID);
-	
+
 	// General Play Action Control
 	mainChar.Play(skip);
 	// npc01.Play(skip);
 	for( int i=0 ; i<(int)robbot.size() ; i++ ){
 		robbot[i].Play(skip);
 	}
+
+	BOOL4 fxb = fx.Play(0, LOOP);
 
 	// Moving Posing Control
 	mainChar.MoveChar(skip, followCam.pos);
@@ -1912,10 +1959,14 @@ void cursorCtr(BYTE code, BOOL4 value){
 		isShowCursor = !isShowCursor;
 }
 void Attack_mouse_L(int x, int y){
+	// BOOL4 fxb = fx_arr[fxArrCnt].Play(0, ONCE);
+	// fxArrCnt = (fxArrCnt+1)%8;
 	mainChar.doAtk  = true;
 	mainChar.AtkKey = 1;
 }
 void Attack_mouse_R(int x, int y){
+	// BOOL4 fxb = fx_arr[fxArrCnt].Play(0, ONCE);
+	// fxArrCnt = (fxArrCnt+1)%8;
 	mainChar.doAtk  = true;
 	mainChar.AtkKey = 2;
 }

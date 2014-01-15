@@ -1,0 +1,18 @@
+# This shader implements Phong shading with texture
+# C.Wang 0518, 2005
+#
+
+Effect Fly2GameFXShader.fx
+
+VertexType position color texture 1 2 ; the vertex format
+
+Technique 3
+   0 PlateTex2    2 colorMap c 0 alphaMap c 1
+   1 GeometryTex2 2 colorMap c 0 alphaMap c 1
+   2 SwordTex2    2 colorMap c 0 alphaMap c 1 
+   
+Constant 4
+   0 E Matrix LocalToScreen mWVP
+   1 E Material Diffuse dif 
+   2 E BeTexture 0 beColormap
+   3 E BeTexture 1 beAlpha

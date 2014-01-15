@@ -1,0 +1,13 @@
+//Swing shader by Digger 2009/09/01
+
+Effect Swing.fx
+
+VertexType position texture 1 2                 ; the vertex format
+
+Technique 1
+   0 Swing 2 premap 0 0 curmap 0 1
+
+Constant 3
+     0 E Material fData 0 BW 4
+     1 E Material fData 1 tu  
+     2 E Material fData 2 tv 

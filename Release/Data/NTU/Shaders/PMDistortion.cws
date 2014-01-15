@@ -1,0 +1,17 @@
+//Projective Mapping Distortion by Digger 2009/09/24
+
+Effect PMDistortion.fx
+
+VertexType position normal texture 1 2 TangentU;
+
+Technique 1
+   0 PMD 3 normalmap 0 0 pMap 0 1 cmap 0 2
+   
+Constant 6
+	0 E Matrix LocalToScreen WVP
+	1 E Matrix Global mW
+    2 E Camera ViewToScreen cam mCP
+    3 E Camera Position cam CP
+    4 E Material fData 0 OW
+    5 E Material fData 1 BW
+    

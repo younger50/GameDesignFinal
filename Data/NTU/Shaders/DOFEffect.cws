@@ -11,15 +11,16 @@ Effect DOFEffect.fx
 VertexType position Texture 1 2
 
 # techniques
-Technique 2
-   0 DoDOF       2 fullResMap 0 0 depthMap 0 1
-   1 GenDepth    0
+Technique 3
+   0 DoDOF9        2 fullResMap 0 0 depthMap 0 1
+   1 DoDOF16       2 fullResMap 0 0 depthMap 0 1
+   2 GenDepth    0
 
 # effect constants   
 Constant 6
-   0 E Material Data  0       dist            ByTech 2 0 1
-   1 E Material Data  1       inside          ByTech 2 0 1
-   2 E Material Data  2       outside         ByTech 2 0 1
-   3 E Material Data  3       pixelSizeHigh 2 ByTech 1 0
+   0 E Material Data  0       dist            ByTech 3 0 1 2
+   1 E Material Data  1       inside          ByTech 3 0 1 2
+   2 E Material Data  2       outside         ByTech 3 0 1 2
+   3 E Material Data  3       pixelSizeHigh 2 ByTech 2 0 1
    4 E Matrix   LocalToScreen mWVP
    5 E Matrix   LocalToView   mWV

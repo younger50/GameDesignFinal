@@ -1,0 +1,27 @@
+# This HLSL shader implements Cartoon shading
+# C.Wang 1105, 2012
+#
+
+# declare vertex type
+VertexType position normal texture 1 2 ; the vertex format
+
+Effect Toon.fx
+
+Technique 1
+   0 Toon 1 colorMap c 0
+
+Constant 14
+   0 E Matrix LocalToScreen mWVP
+   1 E Matrix Global mWorld
+   2 E Matrix GlobalInverse mWorldInv
+   3 E Material Diffuse dif
+   4 E Light Position MainLight mainLightPosition
+   5 E Light Color MainLight mainLightColor
+   6 E Data 0  width     1
+   7 E Data 1  kShadow   3
+   8 E Data 4  wShadow   1
+   9 E Data 5  kLight    3
+  10 E Data 8  wLight    1
+  11 E Data 11 lineColor 3
+  12 E Data 14 kShade    3
+  13 E BeTexture 0 beColorMap
